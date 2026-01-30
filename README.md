@@ -77,19 +77,27 @@ Command	Description
 @Scale("Major/Minor")	Set scale
 @Chord("notes", duration, volume)	Play a chord
 @Rest(seconds)	Silence
+
+
 **Sound Design**
 Command	Description
 @Waveform("Triangle/Square/Saw/Noise")	Sound texture
 @ADSR(a,d,s,r)	Envelope shaping
 @Reverb(amount, decay)	Space
 @Echo(delay, feedback)	Depth
+
+
 **Transitions**
 Command	Description
 @FadeIn(seconds)	Smooth start
 @FadeOut(seconds)	Smooth end
+
+
 **Control Flow**
 Command	Description
 @loop(n){ ... }	Repeat block
+
+
 # Status
 
 Current Version: 0.8
