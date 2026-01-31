@@ -1,6 +1,6 @@
 # ÆTHRA
 <p align="center">
-  <img src="logo.png" alt="ÆTHRA Logo" width="400">
+  <img src="logo.png" alt="ÆTHRA" width="400">
 </p>
 
 <h1 align="center">ÆTHRA LOGO</h1>
