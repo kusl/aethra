@@ -134,7 +134,7 @@ Plugin system
 # Contributing
 
 **ÆTHRA is active**
-Ideas and discussions are welcome.
+,Ideas and discussions are welcome.
 
 Fork the repo
 
