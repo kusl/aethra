@@ -1,6 +1,6 @@
 ===============================================================================
 PROJECT EXPORT
-Generated: Sun Feb  1 04:41:16 PM EST 2026
+Generated: Sun Feb  1 06:00:51 PM EST 2026
 Project Path: /home/kushal/src/dotnet/aethra
 ===============================================================================
 
@@ -249,12 +249,13 @@ MODIFIED: 2026-02-01 16:12:28
 
 ================================================================================
 FILE: AETHRA/Interpreter.cs
-SIZE: 16.36 KB
-MODIFIED: 2026-02-01 16:27:16
+SIZE: 16.82 KB
+MODIFIED: 2026-02-01 18:00:22
 ================================================================================
 
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -299,7 +300,9 @@ namespace AETHRA
             ResetState();
             
             buffer.Clear();
-            Execute(script.Split('\n', StringSplitOptions.RemoveEmptyEntries));
+            // Normalize line endings to handle all platforms (Windows \r\n, Unix \n, Classic Mac \r)
+            string normalizedScript = script.ReplaceLineEndings("\n");
+            Execute(normalizedScript.Split('\n', StringSplitOptions.RemoveEmptyEntries));
             ApplyEcho();
             ApplyReverb();
             WriteWav(wavPath);
@@ -578,6 +581,7 @@ namespace AETHRA
             double t = (double)sampleIndex / SampleRate;
             double baseWave = instrument.ToLower() switch
             {
+                "sine" => Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate),
                 "square" => Math.Sign(Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)),
                 "triangle" => 2 * Math.Asin(Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)) / Math.PI,
                 "saw" => 2 * (t * freq - Math.Floor(t * freq + 0.5)),
@@ -624,7 +628,11 @@ namespace AETHRA
 
         static double NumSafe(string s)
         {
-            try { return double.Parse(s.Replace("\"", "")); }
+            try 
+            { 
+                // Use InvariantCulture to ensure decimal point works regardless of system locale
+                return double.Parse(s.Replace("\"", ""), CultureInfo.InvariantCulture); 
+            }
             catch { return 0; }
         }
 
@@ -1982,7 +1990,7 @@ Symbolizes sound beyond the physical, music as atmosphere, emotion as code.
 
 
 ===============================================================================
-EXPORT COMPLETED: Sun Feb  1 04:41:17 PM EST 2026
+EXPORT COMPLETED: Sun Feb  1 06:00:51 PM EST 2026
 Total Files Found: 16
 Files Exported: 16
 Files Skipped: 0 (binary or large files)
