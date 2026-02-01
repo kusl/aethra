@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -44,7 +45,9 @@ namespace AETHRA
             ResetState();
             
             buffer.Clear();
-            Execute(script.Split('\n', StringSplitOptions.RemoveEmptyEntries));
+            // Normalize line endings to handle all platforms (Windows \r\n, Unix \n, Classic Mac \r)
+            string normalizedScript = script.ReplaceLineEndings("\n");
+            Execute(normalizedScript.Split('\n', StringSplitOptions.RemoveEmptyEntries));
             ApplyEcho();
             ApplyReverb();
             WriteWav(wavPath);
@@ -323,6 +326,7 @@ namespace AETHRA
             double t = (double)sampleIndex / SampleRate;
             double baseWave = instrument.ToLower() switch
             {
+                "sine" => Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate),
                 "square" => Math.Sign(Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)),
                 "triangle" => 2 * Math.Asin(Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)) / Math.PI,
                 "saw" => 2 * (t * freq - Math.Floor(t * freq + 0.5)),
@@ -369,7 +373,11 @@ namespace AETHRA
 
         static double NumSafe(string s)
         {
-            try { return double.Parse(s.Replace("\"", "")); }
+            try 
+            { 
+                // Use InvariantCulture to ensure decimal point works regardless of system locale
+                return double.Parse(s.Replace("\"", ""), CultureInfo.InvariantCulture); 
+            }
             catch { return 0; }
         }
 
