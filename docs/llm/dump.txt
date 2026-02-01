@@ -1,6 +1,6 @@
 ===============================================================================
 PROJECT EXPORT
-Generated: Sun Feb  1 06:42:42 PM EST 2026
+Generated: Sun Feb  1 06:43:53 PM EST 2026
 Project Path: /home/kushal/src/dotnet/aethra
 ===============================================================================
 
@@ -15,7 +15,6 @@ DIRECTORY STRUCTURE:
 │   ├── App.axaml.cs
 │   ├── app.manifest
 │   ├── ATHRAProject.cs
-│   ├── CyberPlus GUI.sln.DotSettings.user
 │   ├── Example AETHRA Script Using All Commands.txt
 │   ├── Interpreter.cs
 │   ├── Interpreter.resx
@@ -2006,7 +2005,7 @@ Symbolizes sound beyond the physical, music as atmosphere, emotion as code.
 
 
 ===============================================================================
-EXPORT COMPLETED: Sun Feb  1 06:42:42 PM EST 2026
+EXPORT COMPLETED: Sun Feb  1 06:43:53 PM EST 2026
 Total Files Found: 17
 Files Exported: 17
 Files Skipped: 0 (binary or large files)
