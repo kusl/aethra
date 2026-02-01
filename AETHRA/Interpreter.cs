@@ -45,6 +45,13 @@ namespace AETHRA
             ResetState();
             
             buffer.Clear();
+            
+            if (string.IsNullOrWhiteSpace(script))
+            {
+                WriteWav(wavPath);
+                return;
+            }
+            
             // Normalize line endings to handle all platforms (Windows \r\n, Unix \n, Classic Mac \r)
             string normalizedScript = script.ReplaceLineEndings("\n");
             Execute(normalizedScript.Split('\n', StringSplitOptions.RemoveEmptyEntries));
@@ -100,7 +107,6 @@ namespace AETHRA
                         List<string> block = new();
                         i++;
                         int braceDepth = 1;
-                        // Handle opening brace on same line or next line
                         if (l.Contains("{"))
                         {
                             braceDepth = 1;
@@ -116,7 +122,7 @@ namespace AETHRA
                             }
                             i++;
                         }
-                        i--; // Adjust for the outer loop increment
+                        i--;
                         for (int t = 0; t < times; t++) Execute(block.ToArray());
                     }
                     else if (l.StartsWith("@Rest")) Rest(NumSafe(ArgSafe(l, 0)));
@@ -177,11 +183,9 @@ namespace AETHRA
                         Texture(ArgSafe(l, 0));
                     else if (l.StartsWith("@Noise"))
                         Noise(NumSafe(ArgSafe(l, 0)), NumSafe(ArgSafe(l, 1)));
-                    // Ignore unknown commands (like @Track which is not implemented)
                 }
                 catch
                 {
-                    // ignore errors: crash-proof
                     continue;
                 }
             }
@@ -286,9 +290,9 @@ namespace AETHRA
                 buffer.Add((float)((rng.NextDouble() * 2 - 1) * vol));
         }
 
-        static void Grain(double sec, double vol, double density) { /* placeholder: granular textures */ }
-        static void Texture(string name) { /* placeholder: Rain/Wind/Ocean */ }
-        static void Harmony(int[] intervals) { /* placeholder: add extra notes relative to last chord */ }
+        static void Grain(double sec, double vol, double density) { /* placeholder */ }
+        static void Texture(string name) { /* placeholder */ }
+        static void Harmony(int[] intervals) { /* placeholder */ }
 
         // ===== FX =====
         static void ApplyEcho()
@@ -310,14 +314,16 @@ namespace AETHRA
         static void FadeIn(double sec)
         {
             int n = (int)(sec * SampleRate);
-            for (int i = 0; i < n && i < buffer.Count; i++) buffer[i] *= (float)i / n;
+            for (int i = 0; i < n && i < buffer.Count; i++)
+                buffer[i] *= (float)i / n;
         }
 
         static void FadeOut(double sec)
         {
             int n = (int)(sec * SampleRate);
             int s = buffer.Count - n;
-            for (int i = 0; i < n && s + i < buffer.Count; i++) buffer[s + i] *= 1f - (float)i / n;
+            for (int i = 0; i < n && s + i < buffer.Count; i++)
+                buffer[s + i] *= 1f - (float)i / n;
         }
 
         // ===== WAVE GENERATION =====
@@ -330,13 +336,12 @@ namespace AETHRA
                 "square" => Math.Sign(Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)),
                 "triangle" => 2 * Math.Asin(Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)) / Math.PI,
                 "saw" => 2 * (t * freq - Math.Floor(t * freq + 0.5)),
-                "strings" => (Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate) + 
+                "strings" => (Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate) +
                              0.5 * Math.Sin(4 * Math.PI * freq * sampleIndex / SampleRate) +
                              0.25 * Math.Sin(6 * Math.PI * freq * sampleIndex / SampleRate)) / 1.75,
                 _ => Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)
             };
 
-            // Apply LFO if enabled
             if (lfoFreq > 0)
                 baseWave *= 1 + lfoDepth * Math.Sin(2 * Math.PI * lfoFreq * t);
 
@@ -373,10 +378,9 @@ namespace AETHRA
 
         static double NumSafe(string s)
         {
-            try 
-            { 
-                // Use InvariantCulture to ensure decimal point works regardless of system locale
-                return double.Parse(s.Replace("\"", ""), CultureInfo.InvariantCulture); 
+            try
+            {
+                return double.Parse(s.Replace("\"", ""), CultureInfo.InvariantCulture);
             }
             catch { return 0; }
         }

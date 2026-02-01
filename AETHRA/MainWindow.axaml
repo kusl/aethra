@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+<![CDATA[<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="AETHRA.MainWindow"
         Title="ÆTHRA — Music Programming Language"
@@ -25,12 +25,12 @@
                  FontFamily="Consolas,Liberation Mono,Courier New,monospace"
                  FontSize="14"
                  Margin="5"
-                 Text="@Tempo(120)
-@Waveform(&quot;Sine&quot;)
-@Note(&quot;C5&quot;,1)
+                 xml:space="preserve">@Tempo(120)
+@Waveform("Sine")
+@Note("C5",1)
 @Rest(0.5)
-@Note(&quot;D5&quot;,1)
-@Note(&quot;E5&quot;,1)
-@Chord(&quot;C4 E4 G4&quot;,2)" />
+@Note("D5",1)
+@Note("E5",1)
+@Chord("C4 E4 G4",2)</TextBox>
     </DockPanel>
-</Window>
+</Window>]]>
