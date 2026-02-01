@@ -32,9 +32,27 @@ namespace AETHRA
                 
                 await Task.Run(() => Interpreter.Run(script, tempPath));
                 
+                // Verify the file was created and has content
+                if (!File.Exists(tempPath))
+                {
+                    _statusText.Text = "Error: WAV file was not created.";
+                    return;
+                }
+                
+                var fileInfo = new FileInfo(tempPath);
+                if (fileInfo.Length < 100) // A valid WAV with any audio should be larger than just the header
+                {
+                    _statusText.Text = "Error: Generated WAV file appears to be empty.";
+                    return;
+                }
+                
                 _statusText.Text = "Playing...";
-                PlayWavFile(tempPath);
-                _statusText.Text = "Done.";
+                bool playbackStarted = await PlayWavFileAsync(tempPath);
+                
+                if (playbackStarted)
+                {
+                    _statusText.Text = "Done.";
+                }
             }
             catch (Exception ex)
             {
@@ -80,39 +98,88 @@ namespace AETHRA
             }
         }
 
-        private void PlayWavFile(string filePath)
+        private async Task<bool> PlayWavFileAsync(string filePath)
         {
             try
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
                     // Try various Linux audio players in order of preference
-                    string[] players = { "paplay", "aplay", "ffplay", "mpv", "vlc" };
-                    foreach (var player in players)
+                    // paplay (PulseAudio), aplay (ALSA), pw-play (PipeWire), ffplay, mpv, vlc
+                    var players = new (string name, string[] args)[]
+                    {
+                        ("paplay", new[] { filePath }),
+                        ("pw-play", new[] { filePath }),
+                        ("aplay", new[] { filePath }),
+                        ("ffplay", new[] { "-nodisp", "-autoexit", filePath }),
+                        ("mpv", new[] { "--no-video", filePath }),
+                        ("vlc", new[] { "--intf", "dummy", "--play-and-exit", filePath })
+                    };
+                    
+                    foreach (var (player, args) in players)
                     {
                         try
                         {
                             var startInfo = new ProcessStartInfo
                             {
                                 FileName = player,
-                                Arguments = player == "ffplay" ? $"-nodisp -autoexit \"{filePath}\"" : $"\"{filePath}\"",
                                 UseShellExecute = false,
                                 CreateNoWindow = true,
-                                RedirectStandardError = true
+                                RedirectStandardError = true,
+                                RedirectStandardOutput = true
                             };
-                            Process.Start(startInfo);
-                            return;
+                            
+                            foreach (var arg in args)
+                            {
+                                startInfo.ArgumentList.Add(arg);
+                            }
+                            
+                            var process = Process.Start(startInfo);
+                            if (process != null)
+                            {
+                                // Give the process a moment to fail if the file can't be played
+                                await Task.Delay(100);
+                                
+                                if (!process.HasExited)
+                                {
+                                    // Process is running, playback likely started
+                                    return true;
+                                }
+                                
+                                // Process exited quickly - check if it was successful
+                                // Exit code 0 typically means success (file played completely if very short)
+                                if (process.ExitCode == 0)
+                                {
+                                    return true;
+                                }
+                                
+                                // Non-zero exit, try next player
+                            }
                         }
                         catch
                         {
-                            // Player not found, try next
+                            // Player not found or failed to start, try next
                         }
                     }
-                    _statusText.Text = "No audio player found. Install pulseaudio-utils or alsa-utils.";
+                    
+                    await Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        _statusText.Text = "No audio player found. Install pulseaudio-utils, pipewire, or alsa-utils.";
+                    });
+                    return false;
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    Process.Start("afplay", $"\"{filePath}\"");
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = "afplay",
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+                    startInfo.ArgumentList.Add(filePath);
+                    
+                    var process = Process.Start(startInfo);
+                    return process != null;
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
@@ -121,15 +188,19 @@ namespace AETHRA
                         FileName = filePath,
                         UseShellExecute = true
                     };
-                    Process.Start(startInfo);
+                    var process = Process.Start(startInfo);
+                    return process != null;
                 }
+                
+                return false;
             }
             catch (Exception ex)
             {
-                Dispatcher.UIThread.Post(() =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     _statusText.Text = $"Playback error: {ex.Message}";
                 });
+                return false;
             }
         }
     }

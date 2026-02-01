@@ -1,6 +1,6 @@
 ===============================================================================
 PROJECT EXPORT
-Generated: Sun Feb  1 04:35:31 PM EST 2026
+Generated: Sun Feb  1 04:36:41 PM EST 2026
 Project Path: /home/kushal/src/dotnet/aethra
 ===============================================================================
 
@@ -151,8 +151,8 @@ MODIFIED: 2026-02-01 16:27:36
 
 ================================================================================
 FILE: AETHRA/CyberPlus GUI.csproj
-SIZE: 1.03 KB
-MODIFIED: 2026-02-01 16:35:10
+SIZE: 1.04 KB
+MODIFIED: 2026-02-01 16:36:34
 ================================================================================
 
 ﻿<Project Sdk="Microsoft.NET.Sdk">
@@ -169,12 +169,12 @@ MODIFIED: 2026-02-01 16:35:10
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.1" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.1" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.1" />
-    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.1" />
+    <PackageReference Include="Avalonia" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.11" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.1" />
+    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.11" />
   </ItemGroup>
 
 </Project>
@@ -1911,7 +1911,7 @@ Symbolizes sound beyond the physical, music as atmosphere, emotion as code.
 
 
 ===============================================================================
-EXPORT COMPLETED: Sun Feb  1 04:35:31 PM EST 2026
+EXPORT COMPLETED: Sun Feb  1 04:36:41 PM EST 2026
 Total Files Found: 16
 Files Exported: 16
 Files Skipped: 0 (binary or large files)
