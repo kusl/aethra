@@ -24,3 +24,47 @@ but for now lets clean up our code, tighten up the user experience on mobile, fi
 thank you and please take as long as necessary to think 
 do not rush 
 do not hallucinate 
+
+
+
+
+I've carefully read through all the code in your AETHRA project. This is a music programming language built with Avalonia for cross-platform desktop support, targeting .NET 10.
+
+Let me create a GitHub Actions workflow that will build full-size binaries for all major desktop platforms (Windows, macOS, Linux) and create a full release with every push.This workflow file should be placed at `.github/workflows/release.yml` in your repository. Here's what it does:
+
+**Build Matrix:**
+- Windows x64 and ARM64
+- Linux x64 and ARM64
+- macOS x64 (Intel) and ARM64 (Apple Silicon)
+
+**Key Features:**
+1. Triggers on every push to any branch
+2. Builds self-contained applications with **no trimming** (`PublishTrimmed=false`)
+3. Does **not** create single-file executables - gives you the full deployment with all dependencies
+4. Creates a full GitHub Release (not pre-release) with every push
+5. Generates a unique tag based on branch, timestamp, and commit SHA to avoid conflicts
+6. Includes release notes with download table and commit message
+
+**What you need to do:**
+
+1. Create the directory structure:
+```bash
+mkdir -p .github/workflows
+```
+
+2. Save the workflow file as `.github/workflows/release.yml`
+
+3. Ensure your repository has the correct permissions. Go to Settings → Actions → General → Workflow permissions and select "Read and write permissions"
+
+**A few notes about your project:**
+
+- Your project targets `net10.0` which is currently in preview. Make sure the GitHub runners have access to .NET 10 preview builds, or update `DOTNET_VERSION` to include preview: `'10.0.x'` with `include-prerelease: true` if needed.
+- The workflow uses `--self-contained true` so users don't need .NET installed
+- All Avalonia dependencies will be included in full
+
+Would you like me to also add a version file or any additional configuration to track build numbers across releases?
+
+
+
+
+
