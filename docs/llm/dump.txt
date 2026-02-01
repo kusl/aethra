@@ -1,6 +1,6 @@
 ===============================================================================
 PROJECT EXPORT
-Generated: Sun Feb  1 04:13:45 PM EST 2026
+Generated: Sun Feb  1 04:30:42 PM EST 2026
 Project Path: /home/kushal/src/dotnet/aethra
 ===============================================================================
 
@@ -10,8 +10,11 @@ DIRECTORY STRUCTURE:
 .
 ├── AETHRA
 │   ├── AETHRA COMMANDS.txt
+│   ├── App.axaml
+│   ├── App.axaml.cs
 │   ├── AppForm.cs
 │   ├── AppForm.resx
+│   ├── app.manifest
 │   ├── ATHRAProject.cs
 │   ├── CyberPlus GUI.csproj
 │   ├── CyberPlus GUI.csproj.user
@@ -22,9 +25,12 @@ DIRECTORY STRUCTURE:
 │   ├── Form1.resx
 │   ├── Interpreter.cs
 │   ├── Interpreter.resx
+│   ├── MainWindow.axaml
+│   ├── MainWindow.axaml.cs
 │   └── Program.cs
 ├── docs
 │   └── llm
+│       ├── claude.md
 │       └── dump.txt
 ├── export.sh
 ├── LICENSE
@@ -58,6 +64,54 @@ MODIFIED: 2026-02-01 16:12:28
 | `@Arp("C4 E4 G4", beats, style?)`             | `@Arp("C4 E4 G4", 3, "up")`  | Arpeggiates chord (up, down, updown, random) |
 | `@Glide(fromNote, toNote, beats)`             | `@Glide("C4","G4",2)`        | Smooth pitch transition between two notes    |
 | `@Waveform("Sine"/"Square"/"Triangle"/"Saw")` | `@Waveform("Triangle")`      | Changes the waveform used for notes          |
+
+
+================================================================================
+FILE: AETHRA/App.axaml
+SIZE: .27 KB
+MODIFIED: 2026-02-01 16:26:15
+================================================================================
+
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AETHRA.App"
+             RequestedThemeVariant="Dark">
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+</Application>
+
+
+================================================================================
+FILE: AETHRA/App.axaml.cs
+SIZE: .57 KB
+MODIFIED: 2026-02-01 16:26:28
+================================================================================
+
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
+
+namespace AETHRA
+{
+    public partial class App : Application
+    {
+        public override void Initialize()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
+
+        public override void OnFrameworkInitializationCompleted()
+        {
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                desktop.MainWindow = new MainWindow();
+            }
+
+            base.OnFrameworkInitializationCompleted();
+        }
+    }
+}
 
 
 ================================================================================
@@ -249,12 +303,31 @@ MODIFIED: 2026-02-01 16:12:28
 </root>
 
 ================================================================================
-FILE: AETHRA/ATHRAProject.cs
-SIZE: .25 KB
-MODIFIED: 2026-02-01 16:12:28
+FILE: AETHRA/app.manifest
+SIZE: .43 KB
+MODIFIED: 2026-02-01 16:27:59
 ================================================================================
 
-﻿namespace Aethra
+<?xml version="1.0" encoding="utf-8"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity version="1.0.0.0" name="AETHRA"/>
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+    <security>
+      <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
+        <requestedExecutionLevel level="asInvoker" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+</assembly>
+
+
+================================================================================
+FILE: AETHRA/ATHRAProject.cs
+SIZE: .25 KB
+MODIFIED: 2026-02-01 16:27:36
+================================================================================
+
+﻿namespace AETHRA
 {
     public class ATHRAProject
     {
@@ -268,37 +341,46 @@ MODIFIED: 2026-02-01 16:12:28
     }
 }
 
+
 ================================================================================
 FILE: AETHRA/CyberPlus GUI.csproj
-SIZE: .43 KB
-MODIFIED: 2026-02-01 16:12:28
+SIZE: 1.03 KB
+MODIFIED: 2026-02-01 16:28:40
 ================================================================================
 
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
-    <RootNamespace>CyberPlus_GUI</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>AETHRA</RootNamespace>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="Avalonia" Version="11.2.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.1" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.1" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.2.1" />
   </ItemGroup>
 
 </Project>
 
+
 ================================================================================
 FILE: AETHRA/CyberPlus GUI.slnx
-SIZE: .08 KB
-MODIFIED: 2026-02-01 16:12:28
+SIZE: .06 KB
+MODIFIED: 2026-02-01 16:30:36
 ================================================================================
 
 <Solution>
-  <Project Path="CyberPlus GUI/CyberPlus GUI.csproj" />
+  <Project Path="CyberPlus GUI.csproj" />
 </Solution>
 
 
@@ -505,15 +587,14 @@ MODIFIED: 2026-02-01 16:12:28
 
 ================================================================================
 FILE: AETHRA/Interpreter.cs
-SIZE: 14.32 KB
-MODIFIED: 2026-02-01 16:12:28
+SIZE: 16.36 KB
+MODIFIED: 2026-02-01 16:27:16
 ================================================================================
 
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Media;
 using System.Text;
 
 namespace AETHRA
@@ -550,21 +631,36 @@ namespace AETHRA
         static List<float> buffer = new();
 
         // ===== ENTRY POINT =====
-        public static void PlayLive(string script)
-        {
-            string temp = Path.Combine(Path.GetTempPath(), "aethra_preview.wav");
-            Run(script, temp);
-            using SoundPlayer player = new(temp);
-            player.Play();
-        }
-
         public static void Run(string script, string wavPath)
         {
+            // Reset state for each run
+            ResetState();
+            
             buffer.Clear();
             Execute(script.Split('\n', StringSplitOptions.RemoveEmptyEntries));
             ApplyEcho();
             ApplyReverb();
             WriteWav(wavPath);
+        }
+
+        private static void ResetState()
+        {
+            tempo = 120;
+            volume = 1.0;
+            attack = 0.01;
+            decay = 0.1;
+            sustain = 0.7;
+            release = 0.2;
+            scaleType = "";
+            echoDelay = 0;
+            echoDecay = 0;
+            reverbRoom = 0;
+            reverbDecay = 0;
+            instrument = "Sine";
+            lfoFreq = 0;
+            lfoDepth = 0;
+            octaveShift = 0;
+            velocityScale = 1.0;
         }
 
         // ===== SCRIPT EXECUTION =====
@@ -580,18 +676,37 @@ namespace AETHRA
                     if (l.StartsWith("@Tempo")) tempo = NumSafe(ArgSafe(l, 0));
                     else if (l.StartsWith("@Volume")) volume = NumSafe(ArgSafe(l, 0));
                     else if (l.StartsWith("@ADSR")) { attack = NumSafe(ArgSafe(l, 0)); decay = NumSafe(ArgSafe(l, 1)); sustain = NumSafe(ArgSafe(l, 2)); release = NumSafe(ArgSafe(l, 3)); }
+                    else if (l.StartsWith("@Envelope")) { attack = NumSafe(ArgSafe(l, 0)); decay = NumSafe(ArgSafe(l, 1)); sustain = NumSafe(ArgSafe(l, 2)); release = NumSafe(ArgSafe(l, 3)); }
                     else if (l.StartsWith("@Scale")) scaleType = ArgSafe(l, 0).Replace("\"", "");
                     else if (l.StartsWith("@Instrument")) instrument = ArgSafe(l, 0).Replace("\"", "");
+                    else if (l.StartsWith("@Waveform")) instrument = ArgSafe(l, 0).Replace("\"", "");
                     else if (l.StartsWith("@Echo")) { echoDelay = NumSafe(ArgSafe(l, 0)); echoDecay = NumSafe(ArgSafe(l, 1)); }
                     else if (l.StartsWith("@Reverb")) { reverbRoom = NumSafe(ArgSafe(l, 0)); reverbDecay = NumSafe(ArgSafe(l, 1)); }
                     else if (l.StartsWith("@FadeIn")) FadeIn(NumSafe(ArgSafe(l, 0)));
                     else if (l.StartsWith("@FadeOut")) FadeOut(NumSafe(ArgSafe(l, 0)));
-                    else if (l.StartsWith("@Loop"))
+                    else if (l.StartsWith("@Loop") || l.StartsWith("@loop"))
                     {
                         int times = (int)NumSafe(ArgSafe(l, 0));
                         List<string> block = new();
                         i++;
-                        while (i < lines.Length && !lines[i].Contains("}")) block.Add(lines[i++]);
+                        int braceDepth = 1;
+                        // Handle opening brace on same line or next line
+                        if (l.Contains("{"))
+                        {
+                            braceDepth = 1;
+                        }
+                        while (i < lines.Length && braceDepth > 0)
+                        {
+                            string blockLine = lines[i];
+                            if (blockLine.Contains("{")) braceDepth++;
+                            if (blockLine.Contains("}")) braceDepth--;
+                            if (braceDepth > 0)
+                            {
+                                block.Add(blockLine);
+                            }
+                            i++;
+                        }
+                        i--; // Adjust for the outer loop increment
                         for (int t = 0; t < times; t++) Execute(block.ToArray());
                     }
                     else if (l.StartsWith("@Rest")) Rest(NumSafe(ArgSafe(l, 0)));
@@ -604,12 +719,12 @@ namespace AETHRA
                         double[] freqs = notes.Select(n => NoteFreqSafe(n)).ToArray();
                         PlayChord(freqs, beats, vel);
                     }
-                    else if (l.StartsWith("@Arpeggio"))
+                    else if (l.StartsWith("@Arpeggio") || l.StartsWith("@Arp"))
                     {
                         string[] notes = ArgSafe(l, 0).Split();
                         double beats = NumSafe(ArgSafe(l, 1));
                         double vel = ArgCountSafe(l) > 2 ? NumSafe(ArgSafe(l, 2)) : 1;
-                        string pattern = ArgCountSafe(l) > 3 ? ArgSafe(l, 3).ToLower() : "up";
+                        string pattern = ArgCountSafe(l) > 3 ? ArgSafe(l, 3).Replace("\"", "").ToLower() : "up";
                         PlayArpeggio(notes, beats, vel, pattern);
                     }
                     else if (l.StartsWith("@OctaveShift")) octaveShift = (int)NumSafe(ArgSafe(l, 0));
@@ -650,6 +765,9 @@ namespace AETHRA
                         Grain(NumSafe(ArgSafe(l, 0)), NumSafe(ArgSafe(l, 1)), NumSafe(ArgSafe(l, 2)));
                     else if (l.StartsWith("@Texture"))
                         Texture(ArgSafe(l, 0));
+                    else if (l.StartsWith("@Noise"))
+                        Noise(NumSafe(ArgSafe(l, 0)), NumSafe(ArgSafe(l, 1)));
+                    // Ignore unknown commands (like @Track which is not implemented)
                 }
                 catch
                 {
@@ -709,6 +827,7 @@ namespace AETHRA
             {
                 "down" => notes.Reverse().ToList(),
                 "random" => notes.OrderBy(_ => rng.Next()).ToList(),
+                "updown" => notes.Concat(notes.Reverse().Skip(1)).ToList(),
                 _ => notes.ToList()
             };
             foreach (string n in order)
@@ -800,6 +919,9 @@ namespace AETHRA
                 "square" => Math.Sign(Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)),
                 "triangle" => 2 * Math.Asin(Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)) / Math.PI,
                 "saw" => 2 * (t * freq - Math.Floor(t * freq + 0.5)),
+                "strings" => (Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate) + 
+                             0.5 * Math.Sin(4 * Math.PI * freq * sampleIndex / SampleRate) +
+                             0.25 * Math.Sin(6 * Math.PI * freq * sampleIndex / SampleRate)) / 1.75,
                 _ => Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)
             };
 
@@ -815,6 +937,7 @@ namespace AETHRA
         {
             try
             {
+                n = n.Replace("\"", "").Trim();
                 string[] notes = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
                 string notePart = n.Length > 1 && n[1] == '#' ? n.Substring(0, 2) : n.Substring(0, 1);
                 int i = Array.IndexOf(notes, notePart);
@@ -839,7 +962,7 @@ namespace AETHRA
 
         static double NumSafe(string s)
         {
-            try { return double.Parse(s); }
+            try { return double.Parse(s.Replace("\"", "")); }
             catch { return 0; }
         }
 
@@ -990,25 +1113,215 @@ MODIFIED: 2026-02-01 16:12:28
 </root>
 
 ================================================================================
+FILE: AETHRA/MainWindow.axaml
+SIZE: 1.45 KB
+MODIFIED: 2026-02-01 16:26:47
+================================================================================
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AETHRA.MainWindow"
+        Title="ÆTHRA — Music Programming Language"
+        Width="900"
+        Height="550"
+        WindowStartupLocation="CenterScreen">
+    
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <Button Name="RunButton" Content="▶ Play" Click="RunButton_Click" 
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                    Height="40" Margin="5" />
+            <Button Name="ExportButton" Content="💾 Export WAV" Click="ExportButton_Click"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                    Height="40" Margin="5" />
+            <TextBlock Name="StatusText" VerticalAlignment="Center" Margin="10,0,0,0" 
+                       Foreground="Gray" />
+        </StackPanel>
+        
+        <TextBox Name="Editor"
+                 AcceptsReturn="True"
+                 AcceptsTab="True"
+                 TextWrapping="NoWrap"
+                 FontFamily="Consolas,Liberation Mono,Courier New,monospace"
+                 FontSize="14"
+                 Margin="5"
+                 Text="@Tempo(120)
+@Waveform(&quot;Sine&quot;)
+@Note(&quot;C5&quot;,1)
+@Rest(0.5)
+@Note(&quot;D5&quot;,1)
+@Note(&quot;E5&quot;,1)
+@Chord(&quot;C4 E4 G4&quot;,2)" />
+    </DockPanel>
+</Window>
+
+
+================================================================================
+FILE: AETHRA/MainWindow.axaml.cs
+SIZE: 4.64 KB
+MODIFIED: 2026-02-01 16:26:59
+================================================================================
+
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
+using Avalonia.Threading;
+
+namespace AETHRA
+{
+    public partial class MainWindow : Window
+    {
+        private TextBox _editor = null!;
+        private TextBlock _statusText = null!;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            _editor = this.FindControl<TextBox>("Editor")!;
+            _statusText = this.FindControl<TextBlock>("StatusText")!;
+        }
+
+        private async void RunButton_Click(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _statusText.Text = "Generating audio...";
+                string script = _editor.Text ?? "";
+                string tempPath = Path.Combine(Path.GetTempPath(), "aethra_preview.wav");
+                
+                await Task.Run(() => Interpreter.Run(script, tempPath));
+                
+                _statusText.Text = "Playing...";
+                PlayWavFile(tempPath);
+                _statusText.Text = "Done.";
+            }
+            catch (Exception ex)
+            {
+                _statusText.Text = $"Error: {ex.Message}";
+            }
+        }
+
+        private async void ExportButton_Click(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var topLevel = GetTopLevel(this);
+                if (topLevel == null)
+                {
+                    return;
+                }
+
+                var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+                {
+                    Title = "Export WAV",
+                    DefaultExtension = "wav",
+                    FileTypeChoices = new[]
+                    {
+                        new FilePickerFileType("WAV Audio") { Patterns = new[] { "*.wav" } }
+                    },
+                    SuggestedFileName = "aethra_output.wav"
+                });
+
+                if (file != null)
+                {
+                    _statusText.Text = "Exporting...";
+                    string script = _editor.Text ?? "";
+                    string path = file.Path.LocalPath;
+                    
+                    await Task.Run(() => Interpreter.Run(script, path));
+                    
+                    _statusText.Text = $"Exported to {Path.GetFileName(path)}";
+                }
+            }
+            catch (Exception ex)
+            {
+                _statusText.Text = $"Error: {ex.Message}";
+            }
+        }
+
+        private void PlayWavFile(string filePath)
+        {
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    // Try various Linux audio players in order of preference
+                    string[] players = { "paplay", "aplay", "ffplay", "mpv", "vlc" };
+                    foreach (var player in players)
+                    {
+                        try
+                        {
+                            var startInfo = new ProcessStartInfo
+                            {
+                                FileName = player,
+                                Arguments = player == "ffplay" ? $"-nodisp -autoexit \"{filePath}\"" : $"\"{filePath}\"",
+                                UseShellExecute = false,
+                                CreateNoWindow = true,
+                                RedirectStandardError = true
+                            };
+                            Process.Start(startInfo);
+                            return;
+                        }
+                        catch
+                        {
+                            // Player not found, try next
+                        }
+                    }
+                    _statusText.Text = "No audio player found. Install pulseaudio-utils or alsa-utils.";
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("afplay", $"\"{filePath}\"");
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = filePath,
+                        UseShellExecute = true
+                    };
+                    Process.Start(startInfo);
+                }
+            }
+            catch (Exception ex)
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _statusText.Text = $"Playback error: {ex.Message}";
+                });
+            }
+        }
+    }
+}
+
+
+================================================================================
 FILE: AETHRA/Program.cs
-SIZE: .34 KB
-MODIFIED: 2026-02-01 16:12:28
+SIZE: .44 KB
+MODIFIED: 2026-02-01 16:25:56
 ================================================================================
 
 ﻿using System;
-using System.Windows.Forms;
+using Avalonia;
 
 namespace AETHRA
 {
     internal static class Program
     {
         [STAThread]
-        static void Main()
-        {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new AppForm());
-        }
+        public static void Main(string[] args) => BuildAvaloniaApp()
+            .StartWithClassicDesktopLifetime(args);
+
+        public static AppBuilder BuildAvaloniaApp()
+            => AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .WithInterFont()
+                .LogToTrace();
     }
 }
 
@@ -1446,9 +1759,9 @@ Symbolizes sound beyond the physical, music as atmosphere, emotion as code.
 
 
 ===============================================================================
-EXPORT COMPLETED: Sun Feb  1 04:13:45 PM EST 2026
-Total Files Found: 14
-Files Exported: 14
+EXPORT COMPLETED: Sun Feb  1 04:30:42 PM EST 2026
+Total Files Found: 19
+Files Exported: 19
 Files Skipped: 0 (binary or large files)
 Output File: /home/kushal/src/dotnet/aethra/docs/llm/dump.txt
 ===============================================================================
