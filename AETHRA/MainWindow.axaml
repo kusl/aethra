@@ -1,4 +1,4 @@
-<![CDATA[<Window xmlns="https://github.com/avaloniaui"
+<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="AETHRA.MainWindow"
         Title="ÆTHRA — Music Programming Language"
@@ -33,4 +33,4 @@
 @Note("E5",1)
 @Chord("C4 E4 G4",2)</TextBox>
     </DockPanel>
-</Window>]]>
+</Window>

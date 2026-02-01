@@ -2327,3 +2327,86 @@ The other files (`Interpreter.cs` and `MainWindow.axaml.cs`) are identical to yo
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+the build failed 
+/home/kushal/src/dotnet/aethra/AETHRA/MainWindow.axaml : Avalonia error AVLN1001: 
+  File doesn't contain valid XAML: System.Xml.XmlException: Data at the root level is invalid. Line 1, position 1.
+     at System.Xml.XmlTextReaderImpl.Throw(Exception e)
+     at System.Xml.XmlTextReaderImpl.Throw(String res, String arg)
+     at System.Xml.XmlTextReaderImpl.ParseDocumentContent()
+     at System.Xml.Linq.XDocument.Load(XmlReader reader, LoadOptions options)
+     at System.Xml.Linq.XDocument.Parse(String text, LoadOptions options)
+     at Avalonia.Build.Tasks.XamlFileInfo.Parse(String data) in /_/src/Avalonia.Build.Tasks/XamlFileInfo.cs:line 11
+     at Avalonia.Build.Tasks.GenerateAvaloniaResourcesTask.PreProcessXamlFiles(List`1 sources) in /_/src/Avalonia.Build.Tasks/GenerateAvaloniaResourcesTask.cs:line 106
+
+The build failed. Fix the build errors and run again.
