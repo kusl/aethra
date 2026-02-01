@@ -1,42 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
+﻿using System.Globalization;
 using System.Text;
 
 namespace AETHRA
 {
-    public class Interpreter
+    public static class Interpreter
     {
         // ===== CONSTANTS =====
-        const int SampleRate = 44100;
-        static Random rng = new();
+        private const int SampleRate = 44100;
+        private static readonly Random Rng = new();
 
         // ===== STATE =====
-        static double tempo = 120;
-        static double volume = 1.0;
+        private static double _tempo = 120;
+        private static double _volume = 1.0;
 
-        static double attack = 0.01, decay = 0.1, sustain = 0.7, release = 0.2;
+        private static double _attack = 0.01, _decay = 0.1, _sustain = 0.7, _release = 0.2;
 
-        static string scaleType = "";
-        static readonly int[] Major = { 0, 2, 4, 5, 7, 9, 11 };
-        static readonly int[] Minor = { 0, 2, 3, 5, 7, 8, 10 };
+        private static double _echoDelay;
+        private static double _echoDecay;
 
-        static double echoDelay = 0;
-        static double echoDecay = 0;
+        private static double _reverbRoom;
+        private static double _reverbDecay;
 
-        static double reverbRoom = 0;
-        static double reverbDecay = 0;
+        private static string _instrument = "Sine"; // default waveform
+        private static double _lfoFreq;
+        private static double _lfoDepth;
 
-        static string instrument = "Sine"; // default waveform
-        static double lfoFreq = 0;
-        static double lfoDepth = 0;
+        private static int _octaveShift;
+        private static double _velocityScale = 1.0;
 
-        static int octaveShift = 0;
-        static double velocityScale = 1.0;
-
-        static List<float> buffer = new();
+        private static readonly List<float> Buffer = [];
 
         // ===== ENTRY POINT =====
         public static void Run(string script, string wavPath)
@@ -44,7 +36,7 @@ namespace AETHRA
             // Reset state for each run
             ResetState();
             
-            buffer.Clear();
+            Buffer.Clear();
             
             if (string.IsNullOrWhiteSpace(script))
             {
@@ -62,26 +54,25 @@ namespace AETHRA
 
         private static void ResetState()
         {
-            tempo = 120;
-            volume = 1.0;
-            attack = 0.01;
-            decay = 0.1;
-            sustain = 0.7;
-            release = 0.2;
-            scaleType = "";
-            echoDelay = 0;
-            echoDecay = 0;
-            reverbRoom = 0;
-            reverbDecay = 0;
-            instrument = "Sine";
-            lfoFreq = 0;
-            lfoDepth = 0;
-            octaveShift = 0;
-            velocityScale = 1.0;
+            _tempo = 120;
+            _volume = 1.0;
+            _attack = 0.01;
+            _decay = 0.1;
+            _sustain = 0.7;
+            _release = 0.2;
+            _echoDelay = 0;
+            _echoDecay = 0;
+            _reverbRoom = 0;
+            _reverbDecay = 0;
+            _instrument = "Sine";
+            _lfoFreq = 0;
+            _lfoDepth = 0;
+            _octaveShift = 0;
+            _velocityScale = 1.0;
         }
 
         // ===== SCRIPT EXECUTION =====
-        static void Execute(string[] lines)
+        private static void Execute(string[] lines)
         {
             for (int i = 0; i < lines.Length; i++)
             {
@@ -90,15 +81,13 @@ namespace AETHRA
 
                 try
                 {
-                    if (l.StartsWith("@Tempo")) tempo = NumSafe(ArgSafe(l, 0));
-                    else if (l.StartsWith("@Volume")) volume = NumSafe(ArgSafe(l, 0));
-                    else if (l.StartsWith("@ADSR")) { attack = NumSafe(ArgSafe(l, 0)); decay = NumSafe(ArgSafe(l, 1)); sustain = NumSafe(ArgSafe(l, 2)); release = NumSafe(ArgSafe(l, 3)); }
-                    else if (l.StartsWith("@Envelope")) { attack = NumSafe(ArgSafe(l, 0)); decay = NumSafe(ArgSafe(l, 1)); sustain = NumSafe(ArgSafe(l, 2)); release = NumSafe(ArgSafe(l, 3)); }
-                    else if (l.StartsWith("@Scale")) scaleType = ArgSafe(l, 0).Replace("\"", "");
-                    else if (l.StartsWith("@Instrument")) instrument = ArgSafe(l, 0).Replace("\"", "");
-                    else if (l.StartsWith("@Waveform")) instrument = ArgSafe(l, 0).Replace("\"", "");
-                    else if (l.StartsWith("@Echo")) { echoDelay = NumSafe(ArgSafe(l, 0)); echoDecay = NumSafe(ArgSafe(l, 1)); }
-                    else if (l.StartsWith("@Reverb")) { reverbRoom = NumSafe(ArgSafe(l, 0)); reverbDecay = NumSafe(ArgSafe(l, 1)); }
+                    if (l.StartsWith("@Tempo")) _tempo = NumSafe(ArgSafe(l, 0));
+                    else if (l.StartsWith("@Volume")) _volume = NumSafe(ArgSafe(l, 0));
+                    else if (l.StartsWith("@ADSR") || l.StartsWith("@Envelope")) { _attack = NumSafe(ArgSafe(l, 0)); _decay = NumSafe(ArgSafe(l, 1)); _sustain = NumSafe(ArgSafe(l, 2)); _release = NumSafe(ArgSafe(l, 3)); }
+                    else if (l.StartsWith("@Scale")) ArgSafe(l, 0).Replace("\"", "");
+                    else if (l.StartsWith("@Instrument") || l.StartsWith("@Waveform")) _instrument = ArgSafe(l, 0).Replace("\"", "");
+                    else if (l.StartsWith("@Echo")) { _echoDelay = NumSafe(ArgSafe(l, 0)); _echoDecay = NumSafe(ArgSafe(l, 1)); }
+                    else if (l.StartsWith("@Reverb")) { _reverbRoom = NumSafe(ArgSafe(l, 0)); _reverbDecay = NumSafe(ArgSafe(l, 1)); }
                     else if (l.StartsWith("@FadeIn")) FadeIn(NumSafe(ArgSafe(l, 0)));
                     else if (l.StartsWith("@FadeOut")) FadeOut(NumSafe(ArgSafe(l, 0)));
                     else if (l.StartsWith("@Loop") || l.StartsWith("@loop"))
@@ -143,8 +132,8 @@ namespace AETHRA
                         string pattern = ArgCountSafe(l) > 3 ? ArgSafe(l, 3).Replace("\"", "").ToLower() : "up";
                         PlayArpeggio(notes, beats, vel, pattern);
                     }
-                    else if (l.StartsWith("@OctaveShift")) octaveShift = (int)NumSafe(ArgSafe(l, 0));
-                    else if (l.StartsWith("@VelocityScale")) velocityScale = NumSafe(ArgSafe(l, 0));
+                    else if (l.StartsWith("@OctaveShift")) _octaveShift = (int)NumSafe(ArgSafe(l, 0));
+                    else if (l.StartsWith("@VelocityScale")) _velocityScale = NumSafe(ArgSafe(l, 0));
                     else if (l.StartsWith("@Glide"))
                     {
                         double f1 = NoteFreqSafe(ArgSafe(l, 0));
@@ -154,9 +143,9 @@ namespace AETHRA
                     }
                     else if (l.StartsWith("@LFO"))
                     {
-                        string type = ArgSafe(l, 0);
-                        lfoFreq = NumSafe(ArgSafe(l, 1));
-                        lfoDepth = NumSafe(ArgSafe(l, 2));
+                        ArgSafe(l, 0);
+                        _lfoFreq = NumSafe(ArgSafe(l, 1));
+                        _lfoDepth = NumSafe(ArgSafe(l, 2));
                     }
                     else if (l.StartsWith("@Harmony"))
                     {
@@ -171,7 +160,7 @@ namespace AETHRA
                         int times = (int)NumSafe(ArgSafe(l, 3));
                         for (int r = 0; r < times; r++)
                         {
-                            string note = notes[rng.Next(notes.Length)];
+                            string note = notes[Rng.Next(notes.Length)];
                             Play(NoteFreqSafe(note), beats, vel);
                         }
                     }
@@ -186,61 +175,61 @@ namespace AETHRA
                 }
                 catch
                 {
-                    continue;
+                    // ignored
                 }
             }
         }
 
         // ===== SOUND METHODS =====
-        static void Play(double freq, double beats, double vel)
+        private static void Play(double freq, double beats, double vel)
         {
-            vel *= velocityScale;
-            double sec = beats * 60 / tempo;
+            vel *= _velocityScale;
+            double sec = beats * 60 / _tempo;
             int n = (int)(sec * SampleRate);
 
             for (int i = 0; i < n; i++)
             {
                 double t = (double)i / n;
                 double env =
-                    t < attack ? t / attack :
-                    t < attack + decay ? 1 - (1 - sustain) * (t - attack) / decay :
-                    t < 1 - release ? sustain :
-                    sustain * (1 - (t - (1 - release)) / release);
+                    t < _attack ? t / _attack :
+                    t < _attack + _decay ? 1 - (1 - _sustain) * (t - _attack) / _decay :
+                    t < 1 - _release ? _sustain :
+                    _sustain * (1 - (t - (1 - _release)) / _release);
 
-                double wave = Waveform(freq, buffer.Count + i);
-                buffer.Add((float)(wave * env * vel * volume));
+                double wave = Waveform(freq, Buffer.Count + i);
+                Buffer.Add((float)(wave * env * vel * _volume));
             }
         }
 
-        static void PlayChord(double[] freqs, double beats, double vel)
+        private static void PlayChord(double[] freqs, double beats, double vel)
         {
-            vel *= velocityScale;
-            double sec = beats * 60 / tempo;
+            vel *= _velocityScale;
+            double sec = beats * 60 / _tempo;
             int n = (int)(sec * SampleRate);
 
             for (int i = 0; i < n; i++)
             {
                 double t = (double)i / n;
                 double env =
-                    t < attack ? t / attack :
-                    t < attack + decay ? 1 - (1 - sustain) * (t - attack) / decay :
-                    t < 1 - release ? sustain :
-                    sustain * (1 - (t - (1 - release)) / release);
+                    t < _attack ? t / _attack :
+                    t < _attack + _decay ? 1 - (1 - _sustain) * (t - _attack) / _decay :
+                    t < 1 - _release ? _sustain :
+                    _sustain * (1 - (t - (1 - _release)) / _release);
 
                 double sample = 0;
-                foreach (double f in freqs) sample += Waveform(f, buffer.Count + i);
+                foreach (double f in freqs) sample += Waveform(f, Buffer.Count + i);
                 sample /= freqs.Length;
-                buffer.Add((float)(sample * env * vel * volume));
+                Buffer.Add((float)(sample * env * vel * _volume));
             }
         }
 
-        static void PlayArpeggio(string[] notes, double beats, double vel, string pattern)
+        private static void PlayArpeggio(string[] notes, double beats, double vel, string pattern)
         {
             double secPerNote = beats / notes.Length;
             List<string> order = pattern switch
             {
                 "down" => notes.Reverse().ToList(),
-                "random" => notes.OrderBy(_ => rng.Next()).ToList(),
+                "random" => notes.OrderBy(_ => Rng.Next()).ToList(),
                 "updown" => notes.Concat(notes.Reverse().Skip(1)).ToList(),
                 _ => notes.ToList()
             };
@@ -248,89 +237,89 @@ namespace AETHRA
                 Play(NoteFreqSafe(n), secPerNote, vel);
         }
 
-        static void Glide(double f1, double f2, double beats)
+        private static void Glide(double f1, double f2, double beats)
         {
-            double sec = beats * 60 / tempo;
+            double sec = beats * 60 / _tempo;
             int n = (int)(sec * SampleRate);
             for (int i = 0; i < n; i++)
             {
                 double t = (double)i / n;
                 double freq = f1 + (f2 - f1) * t;
                 double env =
-                    t < attack ? t / attack :
-                    t < attack + decay ? 1 - (1 - sustain) * (t - attack) / decay :
-                    t < 1 - release ? sustain :
-                    sustain * (1 - (t - (1 - release)) / release);
+                    t < _attack ? t / _attack :
+                    t < _attack + _decay ? 1 - (1 - _sustain) * (t - _attack) / _decay :
+                    t < 1 - _release ? _sustain :
+                    _sustain * (1 - (t - (1 - _release)) / _release);
 
-                buffer.Add((float)(Waveform(freq, buffer.Count + i) * env * volume));
+                Buffer.Add((float)(Waveform(freq, Buffer.Count + i) * env * _volume));
             }
         }
 
-        static void Pulse(double freq, double beats, double vel)
+        private static void Pulse(double freq, double beats, double vel)
         {
-            double sec = beats * 60 / tempo;
+            double sec = beats * 60 / _tempo;
             int n = (int)(sec * SampleRate);
             for (int i = 0; i < n; i++)
             {
-                double wave = Math.Sign(Math.Sin(2 * Math.PI * freq * (buffer.Count + i) / SampleRate));
-                buffer.Add((float)(wave * vel * volume));
+                double wave = Math.Sign(Math.Sin(2 * Math.PI * freq * (Buffer.Count + i) / SampleRate));
+                Buffer.Add((float)(wave * vel * _volume));
             }
         }
 
-        static void Rest(double beats)
+        private static void Rest(double beats)
         {
-            int n = (int)(beats * 60 / tempo * SampleRate);
-            for (int i = 0; i < n; i++) buffer.Add(0);
+            int n = (int)(beats * 60 / _tempo * SampleRate);
+            for (int i = 0; i < n; i++) Buffer.Add(0);
         }
 
-        static void Noise(double sec, double vol)
+        private static void Noise(double sec, double vol)
         {
             int n = (int)(sec * SampleRate);
             for (int i = 0; i < n; i++)
-                buffer.Add((float)((rng.NextDouble() * 2 - 1) * vol));
+                Buffer.Add((float)((Rng.NextDouble() * 2 - 1) * vol));
         }
 
-        static void Grain(double sec, double vol, double density) { /* placeholder */ }
-        static void Texture(string name) { /* placeholder */ }
-        static void Harmony(int[] intervals) { /* placeholder */ }
+        private static void Grain(double sec, double vol, double density) { /* placeholder */ }
+        private static void Texture(string name) { /* placeholder */ }
+        private static void Harmony(int[] intervals) { /* placeholder */ }
 
         // ===== FX =====
-        static void ApplyEcho()
+        private static void ApplyEcho()
         {
-            if (echoDelay <= 0) return;
-            int d = (int)(echoDelay * SampleRate);
-            for (int i = d; i < buffer.Count; i++)
-                buffer[i] += (float)(buffer[i - d] * echoDecay);
+            if (_echoDelay <= 0) return;
+            int d = (int)(_echoDelay * SampleRate);
+            for (int i = d; i < Buffer.Count; i++)
+                Buffer[i] += (float)(Buffer[i - d] * _echoDecay);
         }
 
-        static void ApplyReverb()
+        private static void ApplyReverb()
         {
-            if (reverbRoom <= 0) return;
-            int d = (int)(reverbRoom * SampleRate);
-            for (int i = d; i < buffer.Count; i++)
-                buffer[i] += (float)(buffer[i - d] * reverbDecay);
+            if (_reverbRoom <= 0) return;
+            int d = (int)(_reverbRoom * SampleRate);
+            for (int i = d; i < Buffer.Count; i++)
+                Buffer[i] += (float)(Buffer[i - d] * _reverbDecay);
         }
 
-        static void FadeIn(double sec)
+        private static void FadeIn(double sec)
         {
             int n = (int)(sec * SampleRate);
-            for (int i = 0; i < n && i < buffer.Count; i++)
-                buffer[i] *= (float)i / n;
+            for (int i = 0; i < n && i < Buffer.Count; i++)
+                Buffer[i] *= (float)i / n;
         }
 
-        static void FadeOut(double sec)
+        private static void FadeOut(double sec)
         {
             int n = (int)(sec * SampleRate);
-            int s = buffer.Count - n;
-            for (int i = 0; i < n && s + i < buffer.Count; i++)
-                buffer[s + i] *= 1f - (float)i / n;
+            int s = Buffer.Count - n;
+            for (int i = 0; i < n && s + i < Buffer.Count; i++)
+                Buffer[s + i] *= 1f - (float)i / n;
         }
 
         // ===== WAVE GENERATION =====
-        static double Waveform(double freq, int sampleIndex)
+        private static double Waveform(double freq, int sampleIndex)
         {
             double t = (double)sampleIndex / SampleRate;
-            double baseWave = instrument.ToLower() switch
+            double baseWave = _instrument.ToLower() switch
             {
                 "sine" => Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate),
                 "square" => Math.Sign(Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)),
@@ -342,14 +331,14 @@ namespace AETHRA
                 _ => Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)
             };
 
-            if (lfoFreq > 0)
-                baseWave *= 1 + lfoDepth * Math.Sin(2 * Math.PI * lfoFreq * t);
+            if (_lfoFreq > 0)
+                baseWave *= 1 + _lfoDepth * Math.Sin(2 * Math.PI * _lfoFreq * t);
 
             return baseWave;
         }
 
         // ===== NOTE FREQUENCY =====
-        static double NoteFreqSafe(string n)
+        private static double NoteFreqSafe(string n)
         {
             try
             {
@@ -357,26 +346,26 @@ namespace AETHRA
                 string[] notes = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
                 string notePart = n.Length > 1 && n[1] == '#' ? n.Substring(0, 2) : n.Substring(0, 1);
                 int i = Array.IndexOf(notes, notePart);
-                int oct = int.Parse(n.Substring(notePart.Length)) + octaveShift;
+                int oct = int.Parse(n.Substring(notePart.Length)) + _octaveShift;
                 return 440 * Math.Pow(2, (i + 12 * (oct - 4) - 9) / 12.0);
             }
             catch { return 440; }
         }
 
         // ===== PARSER HELPERS =====
-        static string ArgSafe(string l, int i)
+        private static string ArgSafe(string l, int i)
         {
             try { return l[(l.IndexOf('(') + 1)..l.IndexOf(')')].Split(',')[i].Trim(); }
             catch { return "0"; }
         }
 
-        static int ArgCountSafe(string l)
+        private static int ArgCountSafe(string l)
         {
             try { return l[(l.IndexOf('(') + 1)..l.IndexOf(')')].Split(',').Length; }
             catch { return 0; }
         }
 
-        static double NumSafe(string s)
+        private static double NumSafe(string s)
         {
             try
             {
@@ -386,18 +375,18 @@ namespace AETHRA
         }
 
         // ===== WAV OUTPUT =====
-        static void WriteWav(string path)
+        private static void WriteWav(string path)
         {
             using var bw = new BinaryWriter(File.Create(path));
             bw.Write(Encoding.ASCII.GetBytes("RIFF"));
-            bw.Write(36 + buffer.Count * 2);
+            bw.Write(36 + Buffer.Count * 2);
             bw.Write(Encoding.ASCII.GetBytes("WAVEfmt "));
             bw.Write(16); bw.Write((short)1); bw.Write((short)1);
             bw.Write(SampleRate); bw.Write(SampleRate * 2);
             bw.Write((short)2); bw.Write((short)16);
             bw.Write(Encoding.ASCII.GetBytes("data"));
-            bw.Write(buffer.Count * 2);
-            foreach (var s in buffer)
+            bw.Write(Buffer.Count * 2);
+            foreach (var s in Buffer)
                 bw.Write((short)(Math.Clamp(s, -1, 1) * 32767));
         }
     }

@@ -1,6 +1,6 @@
 ﻿namespace AETHRA
 {
-    public class ATHRAProject
+    public class AthraProject
     {
         public string Name { get; set; } = "";
         public string Path { get; set; } = "";
