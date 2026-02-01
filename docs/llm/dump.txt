@@ -1,6 +1,6 @@
 ===============================================================================
 PROJECT EXPORT
-Generated: Sun Feb  1 06:47:11 PM EST 2026
+Generated: Sun Feb  1 06:49:21 PM EST 2026
 Project Path: /home/kushal/src/dotnet/aethra
 ===============================================================================
 
@@ -26,6 +26,9 @@ DIRECTORY STRUCTURE:
 │   └── llm
 │       ├── claude.md
 │       └── dump.txt
+├── .github
+│   └── workflows
+│       └── release.yml
 ├── aethra.slnx
 ├── export.sh
 ├── .gitignore
@@ -1357,6 +1360,186 @@ echo ""
 
 
 ================================================================================
+FILE: .github/workflows/release.yml
+SIZE: 4.83 KB
+MODIFIED: 2026-02-01 18:48:56
+================================================================================
+
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  PROJECT_PATH: 'AETHRA/aethra.csproj'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            artifact_name: AETHRA-Windows-x64
+          - os: windows-latest
+            rid: win-arm64
+            artifact_name: AETHRA-Windows-ARM64
+          - os: ubuntu-latest
+            rid: linux-x64
+            artifact_name: AETHRA-Linux-x64
+          - os: ubuntu-latest
+            rid: linux-arm64
+            artifact_name: AETHRA-Linux-ARM64
+          - os: macos-latest
+            rid: osx-x64
+            artifact_name: AETHRA-macOS-x64
+          - os: macos-latest
+            rid: osx-arm64
+            artifact_name: AETHRA-macOS-ARM64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }} -r ${{ matrix.rid }}
+
+      - name: Build
+        run: dotnet build ${{ env.PROJECT_PATH }} -c Release -r ${{ matrix.rid }} --no-restore
+
+      - name: Publish
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} \
+            -c Release \
+            -r ${{ matrix.rid }} \
+            --self-contained true \
+            -p:PublishSingleFile=false \
+            -p:PublishTrimmed=false \
+            -p:PublishReadyToRun=false \
+            -p:IncludeNativeLibrariesForSelfExtract=false \
+            -p:IncludeAllContentForSelfExtract=false \
+            -o ./publish/${{ matrix.rid }}
+        shell: bash
+
+      - name: Create archive (Windows)
+        if: startsWith(matrix.rid, 'win')
+        run: |
+          cd publish/${{ matrix.rid }}
+          7z a -tzip ../../${{ matrix.artifact_name }}.zip *
+        shell: bash
+
+      - name: Create archive (Linux/macOS)
+        if: "!startsWith(matrix.rid, 'win')"
+        run: |
+          cd publish/${{ matrix.rid }}
+          tar -czvf ../../${{ matrix.artifact_name }}.tar.gz *
+        shell: bash
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: |
+            ${{ matrix.artifact_name }}.zip
+            ${{ matrix.artifact_name }}.tar.gz
+          if-no-files-found: ignore
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Generate release tag
+        id: tag
+        run: |
+          TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
+          SHORT_SHA=${GITHUB_SHA::7}
+          BRANCH_NAME=${GITHUB_REF_NAME//\//-}
+          TAG="v0.8.0-${BRANCH_NAME}-${TIMESTAMP}-${SHORT_SHA}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "timestamp=${TIMESTAMP}" >> $GITHUB_OUTPUT
+          echo "Generated tag: ${TAG}"
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release_assets
+          find artifacts -type f \( -name "*.zip" -o -name "*.tar.gz" \) -exec cp {} release_assets/ \;
+          ls -la release_assets/
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          cat << 'EOF' > release_notes.md
+          ## ÆTHRA Release
+
+          **Branch:** ${{ github.ref_name }}
+          **Commit:** ${{ github.sha }}
+          **Built:** ${{ steps.tag.outputs.timestamp }}
+
+          ### Downloads
+
+          | Platform | Architecture | File |
+          |----------|--------------|------|
+          | Windows | x64 | `AETHRA-Windows-x64.zip` |
+          | Windows | ARM64 | `AETHRA-Windows-ARM64.zip` |
+          | Linux | x64 | `AETHRA-Linux-x64.tar.gz` |
+          | Linux | ARM64 | `AETHRA-Linux-ARM64.tar.gz` |
+          | macOS | x64 (Intel) | `AETHRA-macOS-x64.tar.gz` |
+          | macOS | ARM64 (Apple Silicon) | `AETHRA-macOS-ARM64.tar.gz` |
+
+          ### Build Information
+
+          - .NET Version: 10.0
+          - Self-contained: Yes
+          - Trimmed: No (full-size binaries)
+          - Single file: No (full deployment)
+
+          ### Changes
+
+          ```
+          ${{ github.event.head_commit.message }}
+          ```
+
+          ---
+          *This is an automated release created on every push.*
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: "ÆTHRA ${{ steps.tag.outputs.tag }}"
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: release_assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+================================================================================
 FILE: .gitignore
 SIZE: 7.82 KB
 MODIFIED: 2026-02-01 16:31:34
@@ -2006,9 +2189,9 @@ Symbolizes sound beyond the physical, music as atmosphere, emotion as code.
 
 
 ===============================================================================
-EXPORT COMPLETED: Sun Feb  1 06:47:11 PM EST 2026
-Total Files Found: 17
-Files Exported: 17
+EXPORT COMPLETED: Sun Feb  1 06:49:21 PM EST 2026
+Total Files Found: 18
+Files Exported: 18
 Files Skipped: 0 (binary or large files)
 Output File: /home/kushal/src/dotnet/aethra/docs/llm/dump.txt
 ===============================================================================
