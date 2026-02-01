@@ -26,26 +26,26 @@ namespace AETHRA
                 _statusText.Text = "Generating audio...";
                 string script = _editor.Text ?? "";
                 string tempPath = Path.Combine(Path.GetTempPath(), "aethra_preview.wav");
-                
+
                 await Task.Run(() => Interpreter.Run(script, tempPath));
-                
+
                 // Verify the file was created and has content
                 if (!File.Exists(tempPath))
                 {
                     _statusText.Text = "Error: WAV file was not created.";
                     return;
                 }
-                
+
                 var fileInfo = new FileInfo(tempPath);
                 if (fileInfo.Length < 100) // A valid WAV with any audio should be larger than just the header
                 {
                     _statusText.Text = "Error: Generated WAV file appears to be empty.";
                     return;
                 }
-                
+
                 _statusText.Text = "Playing...";
                 bool playbackStarted = await PlayWavFileAsync(tempPath);
-                
+
                 if (playbackStarted)
                 {
                     _statusText.Text = "Done.";
@@ -83,9 +83,9 @@ namespace AETHRA
                     _statusText.Text = "Exporting...";
                     string script = _editor.Text ?? "";
                     string path = file.Path.LocalPath;
-                    
+
                     await Task.Run(() => Interpreter.Run(script, path));
-                    
+
                     _statusText.Text = $"Exported to {Path.GetFileName(path)}";
                 }
             }
@@ -112,7 +112,7 @@ namespace AETHRA
                         ("mpv", new[] { "--no-video", filePath }),
                         ("vlc", new[] { "--intf", "dummy", "--play-and-exit", filePath })
                     };
-                    
+
                     foreach (var (player, args) in players)
                     {
                         try
@@ -125,31 +125,31 @@ namespace AETHRA
                                 RedirectStandardError = true,
                                 RedirectStandardOutput = true
                             };
-                            
+
                             foreach (var arg in args)
                             {
                                 startInfo.ArgumentList.Add(arg);
                             }
-                            
+
                             var process = Process.Start(startInfo);
                             if (process != null)
                             {
                                 // Give the process a moment to fail if the file can't be played
                                 await Task.Delay(100);
-                                
+
                                 if (!process.HasExited)
                                 {
                                     // Process is running, playback likely started
                                     return true;
                                 }
-                                
+
                                 // Process exited quickly - check if it was successful
                                 // Exit code 0 typically means success (file played completely if very short)
                                 if (process.ExitCode == 0)
                                 {
                                     return true;
                                 }
-                                
+
                                 // Non-zero exit, try next player
                             }
                         }
@@ -158,7 +158,7 @@ namespace AETHRA
                             // Player not found or failed to start, try next
                         }
                     }
-                    
+
                     await Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         _statusText.Text = "No audio player found. Install pulseaudio-utils, pipewire, or alsa-utils.";
@@ -174,7 +174,7 @@ namespace AETHRA
                         CreateNoWindow = true
                     };
                     startInfo.ArgumentList.Add(filePath);
-                    
+
                     var process = Process.Start(startInfo);
                     return process != null;
                 }
@@ -188,7 +188,7 @@ namespace AETHRA
                     var process = Process.Start(startInfo);
                     return process != null;
                 }
-                
+
                 return false;
             }
             catch (Exception ex)

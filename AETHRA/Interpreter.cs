@@ -35,15 +35,15 @@ namespace AETHRA
         {
             // Reset state for each run
             ResetState();
-            
+
             Buffer.Clear();
-            
+
             if (string.IsNullOrWhiteSpace(script))
             {
                 WriteWav(wavPath);
                 return;
             }
-            
+
             // Normalize line endings to handle all platforms (Windows \r\n, Unix \n, Classic Mac \r)
             string normalizedScript = script.ReplaceLineEndings("\n");
             Execute(normalizedScript.Split('\n', StringSplitOptions.RemoveEmptyEntries));
