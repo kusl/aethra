@@ -1,0 +1,1454 @@
+===============================================================================
+PROJECT EXPORT
+Generated: Sun Feb  1 04:13:45 PM EST 2026
+Project Path: /home/kushal/src/dotnet/aethra
+===============================================================================
+
+DIRECTORY STRUCTURE:
+===================
+
+.
+├── AETHRA
+│   ├── AETHRA COMMANDS.txt
+│   ├── AppForm.cs
+│   ├── AppForm.resx
+│   ├── ATHRAProject.cs
+│   ├── CyberPlus GUI.csproj
+│   ├── CyberPlus GUI.csproj.user
+│   ├── CyberPlus GUI.slnx
+│   ├── Example AETHRA Script Using All Commands.txt
+│   ├── Form1.cs
+│   ├── Form1.Designer.cs
+│   ├── Form1.resx
+│   ├── Interpreter.cs
+│   ├── Interpreter.resx
+│   └── Program.cs
+├── docs
+│   └── llm
+│       └── dump.txt
+├── export.sh
+├── LICENSE
+├── logo.png
+└── README.md
+
+
+FILE CONTENTS:
+==============
+
+================================================================================
+FILE: AETHRA/AETHRA COMMANDS.txt
+SIZE: 2.14 KB
+MODIFIED: 2026-02-01 16:12:28
+================================================================================
+
+| Command                                       | Usage                        | Description                                  |
+| --------------------------------------------- | ---------------------------- | -------------------------------------------- |
+| `@Tempo(value)`                               | `@Tempo(70)`                 | Sets the global tempo in BPM                 |
+| `@ADSR(attack, decay, sustain, release)`      | `@ADSR(0.1, 0.2, 0.7, 0.3)`  | Sets the envelope for notes                  |
+| `@Scale("Major"/"Minor")`                     | `@Scale("Minor")`            | Sets scale snapping for notes                |
+| `@Echo(delaySec, decay)`                      | `@Echo(0.3, 0.5)`            | Adds echo effect                             |
+| `@Reverb(roomSec, decay)`                     | `@Reverb(0.5, 0.3)`          | Adds reverb effect                           |
+| `@FadeIn(sec)`                                | `@FadeIn(2)`                 | Fade in over given seconds                   |
+| `@FadeOut(sec)`                               | `@FadeOut(3)`                | Fade out over given seconds                  |
+| `@Noise(sec, vol)`                            | `@Noise(2, 0.3)`             | Adds white noise (for effects)               |
+| `@Note("C4", beats, velocity?)`               | `@Note("A4", 1, 0.8)`        | Plays single note with optional velocity     |
+| `@Rest(beats)`                                | `@Rest(1)`                   | Rests for a number of beats                  |
+| `@Chord("C4 E4 G4", beats, velocity?)`        | `@Chord("C4 E4 G4", 2, 0.9)` | Plays a chord                                |
+| `@loop(times) { ... }`                        | `@loop(4){ @Note("C4",1) }`  | Repeats block of code multiple times         |
+| `@Arp("C4 E4 G4", beats, style?)`             | `@Arp("C4 E4 G4", 3, "up")`  | Arpeggiates chord (up, down, updown, random) |
+| `@Glide(fromNote, toNote, beats)`             | `@Glide("C4","G4",2)`        | Smooth pitch transition between two notes    |
+| `@Waveform("Sine"/"Square"/"Triangle"/"Saw")` | `@Waveform("Triangle")`      | Changes the waveform used for notes          |
+
+
+================================================================================
+FILE: AETHRA/AppForm.cs
+SIZE: 1.34 KB
+MODIFIED: 2026-02-01 16:12:28
+================================================================================
+
+﻿using System;
+using System.Windows.Forms;
+using System.Media;
+namespace AETHRA
+{
+
+    public class AppForm : Form
+    {
+        TextBox editor;
+        Button runBtn, exportBtn;
+
+        public AppForm()
+        {
+            Text = "ÆTHRA – Music Programming Language";
+            Width = 900;
+            Height = 550;
+
+            editor = new TextBox
+            {
+                Multiline = true,
+                Dock = DockStyle.Fill,
+                Font = new System.Drawing.Font("Consolas", 11),
+                Text =
+@"@Tempo(120)
+@Track(Lead)
+@Note(C5,1)
+@Rest(0.5)
+@Note(D5,1)
+
+@Track(Bass)
+@Volume(0.6)
+@Note(C2,2)"
+            };
+
+            runBtn = new Button { Text = "▶", Height = 40, Dock = DockStyle.Bottom };
+            exportBtn = new Button { Text = "💾", Height = 40, Dock = DockStyle.Bottom };
+
+            runBtn.Click += (s, e) => Interpreter.PlayLive(editor.Text);
+            exportBtn.Click += Export;
+
+            Controls.Add(editor);
+            Controls.Add(exportBtn);
+            Controls.Add(runBtn);
+        }
+
+        void Export(object? s, EventArgs e)
+        {
+            SaveFileDialog sfd = new() { Filter = "WAV (*.wav)|*.wav" };
+            if (sfd.ShowDialog() == DialogResult.OK)
+                Interpreter.Run(editor.Text, sfd.FileName);
+        }
+    }
+}
+
+
+================================================================================
+FILE: AETHRA/AppForm.resx
+SIZE: 5.68 KB
+MODIFIED: 2026-02-01 16:12:28
+================================================================================
+
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+</root>
+
+================================================================================
+FILE: AETHRA/ATHRAProject.cs
+SIZE: .25 KB
+MODIFIED: 2026-02-01 16:12:28
+================================================================================
+
+﻿namespace Aethra
+{
+    public class ATHRAProject
+    {
+        public string Name { get; set; } = "";
+        public string Path { get; set; } = "";
+
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
+}
+
+================================================================================
+FILE: AETHRA/CyberPlus GUI.csproj
+SIZE: .43 KB
+MODIFIED: 2026-02-01 16:12:28
+================================================================================
+
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>CyberPlus_GUI</RootNamespace>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+
+</Project>
+
+================================================================================
+FILE: AETHRA/CyberPlus GUI.slnx
+SIZE: .08 KB
+MODIFIED: 2026-02-01 16:12:28
+================================================================================
+
+<Solution>
+  <Project Path="CyberPlus GUI/CyberPlus GUI.csproj" />
+</Solution>
+
+
+================================================================================
+FILE: AETHRA/Example AETHRA Script Using All Commands.txt
+SIZE: .81 KB
+MODIFIED: 2026-02-01 16:12:28
+================================================================================
+
+@Tempo(80)
+@Volume(0.8)
+@Instrument("Strings")
+@Scale("Minor")
+@Envelope(0.05,0.2,0.7,0.3)
+@Reverb(0.4,0.3)
+@Echo(0.25,0.2)
+@FadeIn(2)
+
+// Intro chords
+@Chord(C3 E3 G3,2,0.7)
+@Chord(A2 D3 F3,2,0.7)
+@Chord(F2 A2 C3,2,0.75)
+@Rest(1)
+
+// Arpeggio
+@Arpeggio(C3 E3 G3,3,0.7,"up")
+
+// Glide example
+@Glide(C4,E4,2)
+
+// Harmony
+@Chord(G3 B3 D4,2,0.8)
+@Harmony(12,19) // adds notes 12 & 19 semitones above
+
+// Looping section
+@loop(2)
+{
+    @Chord(D3 F3 A3,2,0.8)
+    @OctaveShift(1)
+    @Chord(G3 B3 D4,2,0.8)
+    @OctaveShift(-1)
+    @Randomize(C3 D3 E3,0.5,0.7,4)
+}
+
+// LFO vibrato
+@LFO("sine",5,0.05)
+@Chord(C4 E4 G4,2,0.85)
+
+// Grain and texture
+@Grain(2,0.2,0.5)
+@Texture("Rain")
+
+// Ending chords with fade
+@Chord(C3 E3 G3,3,0.85)
+@Chord(A2 D3 F3,3,0.8)
+@Chord(F2 A2 C3,4,0.9)
+@FadeOut(5)
+
+
+================================================================================
+FILE: AETHRA/Form1.cs
+SIZE: .16 KB
+MODIFIED: 2026-02-01 16:12:28
+================================================================================
+
+namespace CyberPlus_GUI
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+    }
+}
+
+
+================================================================================
+FILE: AETHRA/Form1.resx
+SIZE: 5.68 KB
+MODIFIED: 2026-02-01 16:12:28
+================================================================================
+
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+</root>
+
+================================================================================
+FILE: AETHRA/Interpreter.cs
+SIZE: 14.32 KB
+MODIFIED: 2026-02-01 16:12:28
+================================================================================
+
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Media;
+using System.Text;
+
+namespace AETHRA
+{
+    public class Interpreter
+    {
+        // ===== CONSTANTS =====
+        const int SampleRate = 44100;
+        static Random rng = new();
+
+        // ===== STATE =====
+        static double tempo = 120;
+        static double volume = 1.0;
+
+        static double attack = 0.01, decay = 0.1, sustain = 0.7, release = 0.2;
+
+        static string scaleType = "";
+        static readonly int[] Major = { 0, 2, 4, 5, 7, 9, 11 };
+        static readonly int[] Minor = { 0, 2, 3, 5, 7, 8, 10 };
+
+        static double echoDelay = 0;
+        static double echoDecay = 0;
+
+        static double reverbRoom = 0;
+        static double reverbDecay = 0;
+
+        static string instrument = "Sine"; // default waveform
+        static double lfoFreq = 0;
+        static double lfoDepth = 0;
+
+        static int octaveShift = 0;
+        static double velocityScale = 1.0;
+
+        static List<float> buffer = new();
+
+        // ===== ENTRY POINT =====
+        public static void PlayLive(string script)
+        {
+            string temp = Path.Combine(Path.GetTempPath(), "aethra_preview.wav");
+            Run(script, temp);
+            using SoundPlayer player = new(temp);
+            player.Play();
+        }
+
+        public static void Run(string script, string wavPath)
+        {
+            buffer.Clear();
+            Execute(script.Split('\n', StringSplitOptions.RemoveEmptyEntries));
+            ApplyEcho();
+            ApplyReverb();
+            WriteWav(wavPath);
+        }
+
+        // ===== SCRIPT EXECUTION =====
+        static void Execute(string[] lines)
+        {
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string l = lines[i].Trim();
+                if (string.IsNullOrWhiteSpace(l) || l.StartsWith("//")) continue;
+
+                try
+                {
+                    if (l.StartsWith("@Tempo")) tempo = NumSafe(ArgSafe(l, 0));
+                    else if (l.StartsWith("@Volume")) volume = NumSafe(ArgSafe(l, 0));
+                    else if (l.StartsWith("@ADSR")) { attack = NumSafe(ArgSafe(l, 0)); decay = NumSafe(ArgSafe(l, 1)); sustain = NumSafe(ArgSafe(l, 2)); release = NumSafe(ArgSafe(l, 3)); }
+                    else if (l.StartsWith("@Scale")) scaleType = ArgSafe(l, 0).Replace("\"", "");
+                    else if (l.StartsWith("@Instrument")) instrument = ArgSafe(l, 0).Replace("\"", "");
+                    else if (l.StartsWith("@Echo")) { echoDelay = NumSafe(ArgSafe(l, 0)); echoDecay = NumSafe(ArgSafe(l, 1)); }
+                    else if (l.StartsWith("@Reverb")) { reverbRoom = NumSafe(ArgSafe(l, 0)); reverbDecay = NumSafe(ArgSafe(l, 1)); }
+                    else if (l.StartsWith("@FadeIn")) FadeIn(NumSafe(ArgSafe(l, 0)));
+                    else if (l.StartsWith("@FadeOut")) FadeOut(NumSafe(ArgSafe(l, 0)));
+                    else if (l.StartsWith("@Loop"))
+                    {
+                        int times = (int)NumSafe(ArgSafe(l, 0));
+                        List<string> block = new();
+                        i++;
+                        while (i < lines.Length && !lines[i].Contains("}")) block.Add(lines[i++]);
+                        for (int t = 0; t < times; t++) Execute(block.ToArray());
+                    }
+                    else if (l.StartsWith("@Rest")) Rest(NumSafe(ArgSafe(l, 0)));
+                    else if (l.StartsWith("@Note")) Play(NoteFreqSafe(ArgSafe(l, 0)), NumSafe(ArgSafe(l, 1)), ArgCountSafe(l) > 2 ? NumSafe(ArgSafe(l, 2)) : 1);
+                    else if (l.StartsWith("@Chord"))
+                    {
+                        string[] notes = ArgSafe(l, 0).Split();
+                        double beats = NumSafe(ArgSafe(l, 1));
+                        double vel = ArgCountSafe(l) > 2 ? NumSafe(ArgSafe(l, 2)) : 1;
+                        double[] freqs = notes.Select(n => NoteFreqSafe(n)).ToArray();
+                        PlayChord(freqs, beats, vel);
+                    }
+                    else if (l.StartsWith("@Arpeggio"))
+                    {
+                        string[] notes = ArgSafe(l, 0).Split();
+                        double beats = NumSafe(ArgSafe(l, 1));
+                        double vel = ArgCountSafe(l) > 2 ? NumSafe(ArgSafe(l, 2)) : 1;
+                        string pattern = ArgCountSafe(l) > 3 ? ArgSafe(l, 3).ToLower() : "up";
+                        PlayArpeggio(notes, beats, vel, pattern);
+                    }
+                    else if (l.StartsWith("@OctaveShift")) octaveShift = (int)NumSafe(ArgSafe(l, 0));
+                    else if (l.StartsWith("@VelocityScale")) velocityScale = NumSafe(ArgSafe(l, 0));
+                    else if (l.StartsWith("@Glide"))
+                    {
+                        double f1 = NoteFreqSafe(ArgSafe(l, 0));
+                        double f2 = NoteFreqSafe(ArgSafe(l, 1));
+                        double beats = NumSafe(ArgSafe(l, 2));
+                        Glide(f1, f2, beats);
+                    }
+                    else if (l.StartsWith("@LFO"))
+                    {
+                        string type = ArgSafe(l, 0);
+                        lfoFreq = NumSafe(ArgSafe(l, 1));
+                        lfoDepth = NumSafe(ArgSafe(l, 2));
+                    }
+                    else if (l.StartsWith("@Harmony"))
+                    {
+                        string[] intervals = ArgSafe(l, 0).Split();
+                        Harmony(intervals.Select(s => int.Parse(s)).ToArray());
+                    }
+                    else if (l.StartsWith("@Randomize"))
+                    {
+                        string[] notes = ArgSafe(l, 0).Split();
+                        double beats = NumSafe(ArgSafe(l, 1));
+                        double vel = NumSafe(ArgSafe(l, 2));
+                        int times = (int)NumSafe(ArgSafe(l, 3));
+                        for (int r = 0; r < times; r++)
+                        {
+                            string note = notes[rng.Next(notes.Length)];
+                            Play(NoteFreqSafe(note), beats, vel);
+                        }
+                    }
+                    else if (l.StartsWith("@Pulse"))
+                        Pulse(NumSafe(ArgSafe(l, 0)), NumSafe(ArgSafe(l, 1)), ArgCountSafe(l) > 2 ? NumSafe(ArgSafe(l, 2)) : 1);
+                    else if (l.StartsWith("@Grain"))
+                        Grain(NumSafe(ArgSafe(l, 0)), NumSafe(ArgSafe(l, 1)), NumSafe(ArgSafe(l, 2)));
+                    else if (l.StartsWith("@Texture"))
+                        Texture(ArgSafe(l, 0));
+                }
+                catch
+                {
+                    // ignore errors: crash-proof
+                    continue;
+                }
+            }
+        }
+
+        // ===== SOUND METHODS =====
+        static void Play(double freq, double beats, double vel)
+        {
+            vel *= velocityScale;
+            double sec = beats * 60 / tempo;
+            int n = (int)(sec * SampleRate);
+
+            for (int i = 0; i < n; i++)
+            {
+                double t = (double)i / n;
+                double env =
+                    t < attack ? t / attack :
+                    t < attack + decay ? 1 - (1 - sustain) * (t - attack) / decay :
+                    t < 1 - release ? sustain :
+                    sustain * (1 - (t - (1 - release)) / release);
+
+                double wave = Waveform(freq, buffer.Count + i);
+                buffer.Add((float)(wave * env * vel * volume));
+            }
+        }
+
+        static void PlayChord(double[] freqs, double beats, double vel)
+        {
+            vel *= velocityScale;
+            double sec = beats * 60 / tempo;
+            int n = (int)(sec * SampleRate);
+
+            for (int i = 0; i < n; i++)
+            {
+                double t = (double)i / n;
+                double env =
+                    t < attack ? t / attack :
+                    t < attack + decay ? 1 - (1 - sustain) * (t - attack) / decay :
+                    t < 1 - release ? sustain :
+                    sustain * (1 - (t - (1 - release)) / release);
+
+                double sample = 0;
+                foreach (double f in freqs) sample += Waveform(f, buffer.Count + i);
+                sample /= freqs.Length;
+                buffer.Add((float)(sample * env * vel * volume));
+            }
+        }
+
+        static void PlayArpeggio(string[] notes, double beats, double vel, string pattern)
+        {
+            double secPerNote = beats / notes.Length;
+            List<string> order = pattern switch
+            {
+                "down" => notes.Reverse().ToList(),
+                "random" => notes.OrderBy(_ => rng.Next()).ToList(),
+                _ => notes.ToList()
+            };
+            foreach (string n in order)
+                Play(NoteFreqSafe(n), secPerNote, vel);
+        }
+
+        static void Glide(double f1, double f2, double beats)
+        {
+            double sec = beats * 60 / tempo;
+            int n = (int)(sec * SampleRate);
+            for (int i = 0; i < n; i++)
+            {
+                double t = (double)i / n;
+                double freq = f1 + (f2 - f1) * t;
+                double env =
+                    t < attack ? t / attack :
+                    t < attack + decay ? 1 - (1 - sustain) * (t - attack) / decay :
+                    t < 1 - release ? sustain :
+                    sustain * (1 - (t - (1 - release)) / release);
+
+                buffer.Add((float)(Waveform(freq, buffer.Count + i) * env * volume));
+            }
+        }
+
+        static void Pulse(double freq, double beats, double vel)
+        {
+            double sec = beats * 60 / tempo;
+            int n = (int)(sec * SampleRate);
+            for (int i = 0; i < n; i++)
+            {
+                double wave = Math.Sign(Math.Sin(2 * Math.PI * freq * (buffer.Count + i) / SampleRate));
+                buffer.Add((float)(wave * vel * volume));
+            }
+        }
+
+        static void Rest(double beats)
+        {
+            int n = (int)(beats * 60 / tempo * SampleRate);
+            for (int i = 0; i < n; i++) buffer.Add(0);
+        }
+
+        static void Noise(double sec, double vol)
+        {
+            int n = (int)(sec * SampleRate);
+            for (int i = 0; i < n; i++)
+                buffer.Add((float)((rng.NextDouble() * 2 - 1) * vol));
+        }
+
+        static void Grain(double sec, double vol, double density) { /* placeholder: granular textures */ }
+        static void Texture(string name) { /* placeholder: Rain/Wind/Ocean */ }
+        static void Harmony(int[] intervals) { /* placeholder: add extra notes relative to last chord */ }
+
+        // ===== FX =====
+        static void ApplyEcho()
+        {
+            if (echoDelay <= 0) return;
+            int d = (int)(echoDelay * SampleRate);
+            for (int i = d; i < buffer.Count; i++)
+                buffer[i] += (float)(buffer[i - d] * echoDecay);
+        }
+
+        static void ApplyReverb()
+        {
+            if (reverbRoom <= 0) return;
+            int d = (int)(reverbRoom * SampleRate);
+            for (int i = d; i < buffer.Count; i++)
+                buffer[i] += (float)(buffer[i - d] * reverbDecay);
+        }
+
+        static void FadeIn(double sec)
+        {
+            int n = (int)(sec * SampleRate);
+            for (int i = 0; i < n && i < buffer.Count; i++) buffer[i] *= (float)i / n;
+        }
+
+        static void FadeOut(double sec)
+        {
+            int n = (int)(sec * SampleRate);
+            int s = buffer.Count - n;
+            for (int i = 0; i < n && s + i < buffer.Count; i++) buffer[s + i] *= 1f - (float)i / n;
+        }
+
+        // ===== WAVE GENERATION =====
+        static double Waveform(double freq, int sampleIndex)
+        {
+            double t = (double)sampleIndex / SampleRate;
+            double baseWave = instrument.ToLower() switch
+            {
+                "square" => Math.Sign(Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)),
+                "triangle" => 2 * Math.Asin(Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)) / Math.PI,
+                "saw" => 2 * (t * freq - Math.Floor(t * freq + 0.5)),
+                _ => Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)
+            };
+
+            // Apply LFO if enabled
+            if (lfoFreq > 0)
+                baseWave *= 1 + lfoDepth * Math.Sin(2 * Math.PI * lfoFreq * t);
+
+            return baseWave;
+        }
+
+        // ===== NOTE FREQUENCY =====
+        static double NoteFreqSafe(string n)
+        {
+            try
+            {
+                string[] notes = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+                string notePart = n.Length > 1 && n[1] == '#' ? n.Substring(0, 2) : n.Substring(0, 1);
+                int i = Array.IndexOf(notes, notePart);
+                int oct = int.Parse(n.Substring(notePart.Length)) + octaveShift;
+                return 440 * Math.Pow(2, (i + 12 * (oct - 4) - 9) / 12.0);
+            }
+            catch { return 440; }
+        }
+
+        // ===== PARSER HELPERS =====
+        static string ArgSafe(string l, int i)
+        {
+            try { return l[(l.IndexOf('(') + 1)..l.IndexOf(')')].Split(',')[i].Trim(); }
+            catch { return "0"; }
+        }
+
+        static int ArgCountSafe(string l)
+        {
+            try { return l[(l.IndexOf('(') + 1)..l.IndexOf(')')].Split(',').Length; }
+            catch { return 0; }
+        }
+
+        static double NumSafe(string s)
+        {
+            try { return double.Parse(s); }
+            catch { return 0; }
+        }
+
+        // ===== WAV OUTPUT =====
+        static void WriteWav(string path)
+        {
+            using var bw = new BinaryWriter(File.Create(path));
+            bw.Write(Encoding.ASCII.GetBytes("RIFF"));
+            bw.Write(36 + buffer.Count * 2);
+            bw.Write(Encoding.ASCII.GetBytes("WAVEfmt "));
+            bw.Write(16); bw.Write((short)1); bw.Write((short)1);
+            bw.Write(SampleRate); bw.Write(SampleRate * 2);
+            bw.Write((short)2); bw.Write((short)16);
+            bw.Write(Encoding.ASCII.GetBytes("data"));
+            bw.Write(buffer.Count * 2);
+            foreach (var s in buffer)
+                bw.Write((short)(Math.Clamp(s, -1, 1) * 32767));
+        }
+    }
+}
+
+
+================================================================================
+FILE: AETHRA/Interpreter.resx
+SIZE: 5.68 KB
+MODIFIED: 2026-02-01 16:12:28
+================================================================================
+
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+</root>
+
+================================================================================
+FILE: AETHRA/Program.cs
+SIZE: .34 KB
+MODIFIED: 2026-02-01 16:12:28
+================================================================================
+
+﻿using System;
+using System.Windows.Forms;
+
+namespace AETHRA
+{
+    internal static class Program
+    {
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new AppForm());
+        }
+    }
+}
+
+
+================================================================================
+FILE: export.sh
+SIZE: 8.54 KB
+MODIFIED: 2026-01-26 05:51:37
+================================================================================
+
+#!/bin/bash
+# =============================================================================
+# Complete Project Export for LLM Analysis
+# =============================================================================
+# Exports all relevant source files, configs, and documentation for AI review.
+# Excludes: binaries, build outputs, IDE files, packages, git internals
+# =============================================================================
+
+set -e
+
+OUTPUT_DIR="docs/llm"
+OUTPUT_FILE="$OUTPUT_DIR/dump.txt"
+PROJECT_PATH="$(pwd)"
+
+# File extensions to include (comprehensive list for .NET/Blazor projects)
+# Source code
+SOURCE_EXTS="cs|fs|vb"
+# XAML/Avalonia UI
+XAML_EXTS="axaml|xaml|paml"
+# Blazor/Razor
+RAZOR_EXTS="razor"
+# Project/Build files
+PROJECT_EXTS="csproj|fsproj|vbproj|slnx|sln|props|targets|tasks"
+# Config files
+CONFIG_EXTS="json|yaml|yml|xml|config|settings"
+# Documentation
+DOC_EXTS="md|txt|rst|adoc"
+# Scripts
+SCRIPT_EXTS="sh|ps1|psm1|cmd|bat"
+# Web/Style/Scripts
+WEB_EXTS="css|scss|sass|less|js|ts"
+# Data/Templates
+DATA_EXTS="sql|csv|resx|resources"
+# Docker/CI
+DEVOPS_EXTS="dockerfile|dockerignore|editorconfig|gitignore|gitattributes"
+
+# Directories to exclude
+EXCLUDE_DIRS="bin|obj|.git|.vs|.idea|.vscode|node_modules|packages|TestResults|coverage|publish|artifacts|.nuget|wwwroot/lib"
+
+# Files to exclude (patterns)
+EXCLUDE_FILES="*.Designer.cs|*.g.cs|*.g.i.cs|AssemblyInfo.cs|*.min.js|*.min.css|package-lock.json|*.lock|*.bak"
+
+echo "=============================================="
+echo "  Project Export for LLM Analysis"
+echo "=============================================="
+echo ""
+echo "Project Path: $PROJECT_PATH"
+echo "Output File:  $OUTPUT_FILE"
+echo ""
+
+mkdir -p "$OUTPUT_DIR"
+
+# Start output file
+{
+    echo "==============================================================================="
+    echo "PROJECT EXPORT"
+    echo "Generated: $(date)"
+    echo "Project Path: $PROJECT_PATH"
+    echo "==============================================================================="
+    echo ""
+} > "$OUTPUT_FILE"
+
+# Directory structure
+echo "Generating directory structure..."
+{
+    echo "DIRECTORY STRUCTURE:"
+    echo "==================="
+    echo ""
+    # Try tree first, fall back to find
+    if command -v tree &> /dev/null; then
+        tree -a -I "$EXCLUDE_DIRS" --noreport --dirsfirst 2>/dev/null || echo "(tree command failed)"
+    else
+        find . -type d \( -name "bin" -o -name "obj" -o -name ".git" -o -name ".vs" -o -name ".idea" -o -name "node_modules" -o -name "packages" -o -name "TestResults" \) -prune -o -type f -print | sed 's|[^/]*/|  |g' | sort
+    fi
+    echo ""
+    echo ""
+} >> "$OUTPUT_FILE"
+
+# Build the find command dynamically
+echo "Collecting files..."
+
+# Create a temporary file for the file list
+TMPFILE=$(mktemp)
+
+# Find all relevant files
+find . -type f \( \
+    -iname "*.cs" -o \
+    -iname "*.fs" -o \
+    -iname "*.vb" -o \
+    -iname "*.razor" -o \
+    -iname "*.axaml" -o \
+    -iname "*.xaml" -o \
+    -iname "*.paml" -o \
+    -iname "*.csproj" -o \
+    -iname "*.fsproj" -o \
+    -iname "*.vbproj" -o \
+    -iname "*.slnx" -o \
+    -iname "*.sln" -o \
+    -iname "*.props" -o \
+    -iname "*.targets" -o \
+    -iname "*.json" -o \
+    -iname "*.yaml" -o \
+    -iname "*.yml" -o \
+    -iname "*.xml" -o \
+    -iname "*.config" -o \
+    -iname "*.md" -o \
+    -iname "*.txt" -o \
+    -iname "*.sh" -o \
+    -iname "*.ps1" -o \
+    -iname "*.cmd" -o \
+    -iname "*.bat" -o \
+    -iname "*.sql" -o \
+    -iname "*.resx" -o \
+    -iname "*.css" -o \
+    -iname "*.scss" -o \
+    -iname "*.js" -o \
+    -iname "*.ts" -o \
+    -iname "*.manifest" -o \
+    -iname "*.ico" -o \
+    -iname "Dockerfile" -o \
+    -iname "docker-compose*.yml" -o \
+    -iname ".editorconfig" -o \
+    -iname ".gitignore" -o \
+    -iname ".gitattributes" -o \
+    -iname "global.json" -o \
+    -iname "nuget.config" -o \
+    -iname "Directory.Build.props" -o \
+    -iname "Directory.Build.targets" -o \
+    -iname "Directory.Packages.props" \
+    \) \
+    ! -path "*/bin/*" \
+    ! -path "*/obj/*" \
+    ! -path "*/docs/*" \
+    ! -path "*/.git/*" \
+    ! -path "*/.vs/*" \
+    ! -path "*/.idea/*" \
+    ! -path "*/.vscode/*" \
+    ! -path "*/node_modules/*" \
+    ! -path "*/packages/*" \
+    ! -path "*/TestResults/*" \
+    ! -path "*/coverage/*" \
+    ! -path "*/publish/*" \
+    ! -path "*/artifacts/*" \
+    ! -path "*/.nuget/*" \
+    ! -path "*/wwwroot/lib/*" \
+    ! -name "*.Designer.cs" \
+    ! -name "*.g.cs" \
+    ! -name "*.g.i.cs" \
+    ! -name "*.min.js" \
+    ! -name "*.min.css" \
+    ! -name "package-lock.json" \
+    ! -name "*.bak" \
+    2>/dev/null | sort > "$TMPFILE"
+
+FILE_COUNT=$(wc -l < "$TMPFILE")
+echo "Found $FILE_COUNT files to export"
+echo ""
+
+# Add file contents header
+{
+    echo "FILE CONTENTS:"
+    echo "=============="
+    echo ""
+} >> "$OUTPUT_FILE"
+
+# Process each file
+COUNTER=0
+SKIPPED=0
+
+while IFS= read -r file; do
+    COUNTER=$((COUNTER + 1))
+    FILENAME="${file#./}"
+    
+    # Skip binary files (check if file is text)
+    if file "$file" | grep -qE "binary|executable|data|image"; then
+        # For some files we want to note they exist but not dump contents
+        if [[ "$file" =~ \.(ico|png|jpg|jpeg|gif|bmp|svg|woff|woff2|ttf|eot)$ ]]; then
+            SKIPPED=$((SKIPPED + 1))
+            echo "Skipping binary ($COUNTER/$FILE_COUNT): $FILENAME"
+            {
+                echo "================================================================================"
+                echo "FILE: $FILENAME"
+                echo "TYPE: [BINARY FILE - Contents not exported]"
+                echo "================================================================================"
+                echo ""
+            } >> "$OUTPUT_FILE"
+            continue
+        fi
+    fi
+    
+    # Get file info
+    FILESIZE=$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file" 2>/dev/null || echo "0")
+    MODIFIED=$(stat -c%y "$file" 2>/dev/null | cut -d'.' -f1 || stat -f"%Sm" -t "%Y-%m-%d %H:%M:%S" "$file" 2>/dev/null || echo "unknown")
+    
+    # Skip very large files (>500KB) - they're probably not source code
+    if [ "$FILESIZE" -gt 512000 ]; then
+        SKIPPED=$((SKIPPED + 1))
+        echo "Skipping large file ($COUNTER/$FILE_COUNT): $FILENAME ($(echo "scale=0; $FILESIZE/1024" | bc)KB)"
+        {
+            echo "================================================================================"
+            echo "FILE: $FILENAME"
+            echo "SIZE: $(echo "scale=2; $FILESIZE/1024" | bc) KB"
+            echo "TYPE: [LARGE FILE - Contents not exported, exceeds 500KB limit]"
+            echo "================================================================================"
+            echo ""
+        } >> "$OUTPUT_FILE"
+        continue
+    fi
+    
+    echo "Processing ($COUNTER/$FILE_COUNT): $FILENAME"
+    
+    {
+        echo "================================================================================"
+        echo "FILE: $FILENAME"
+        echo "SIZE: $(echo "scale=2; $FILESIZE/1024" | bc 2>/dev/null || echo "0.00") KB"
+        echo "MODIFIED: $MODIFIED"
+        echo "================================================================================"
+        echo ""
+        cat "$file" 2>/dev/null || echo "[ERROR: Could not read file]"
+        echo ""
+        echo ""
+    } >> "$OUTPUT_FILE"
+    
+done < "$TMPFILE"
+
+# Cleanup
+rm -f "$TMPFILE"
+
+# Summary
+EXPORTED=$((COUNTER - SKIPPED))
+{
+    echo "==============================================================================="
+    echo "EXPORT COMPLETED: $(date)"
+    echo "Total Files Found: $FILE_COUNT"
+    echo "Files Exported: $EXPORTED"
+    echo "Files Skipped: $SKIPPED (binary or large files)"
+    echo "Output File: $PROJECT_PATH/$OUTPUT_FILE"
+    echo "==============================================================================="
+} >> "$OUTPUT_FILE"
+
+# Final output
+OUTPUT_SIZE=$(stat -c%s "$OUTPUT_FILE" 2>/dev/null || stat -f%z "$OUTPUT_FILE" 2>/dev/null || echo "0")
+
+echo ""
+echo "=============================================="
+echo "  Export Complete!"
+echo "=============================================="
+echo ""
+echo "Output file:    $OUTPUT_FILE"
+echo "Files exported: $EXPORTED"
+echo "Files skipped:  $SKIPPED"
+echo "Output size:    $(echo "scale=2; $OUTPUT_SIZE/1024" | bc 2>/dev/null || echo "?") KB"
+echo ""
+echo "File types included:"
+echo "  • Source code: .cs, .fs, .vb"
+echo "  • Blazor/Razor: .razor"
+echo "  • UI/XAML: .axaml, .xaml, .paml"
+echo "  • Projects: .csproj, .slnx, .sln, .props, .targets"
+echo "  • Config: .json, .yaml, .yml, .xml, .config"
+echo "  • Docs: .md, .txt"
+echo "  • Scripts: .sh, .ps1, .cmd, .bat"
+echo "  • Web: .css, .scss, .js, .ts"
+echo "  • Other: .sql, .resx, Dockerfile, etc."
+echo ""
+
+
+
+================================================================================
+FILE: README.md
+SIZE: 2.44 KB
+MODIFIED: 2026-02-01 16:12:28
+================================================================================
+
+# ÆTHRA
+<p align="center">
+  <img src="logo.png" alt="ÆTHRA LOGO" width="400">
+</p>
+
+<h1 align="center">ÆTHRA</h1>
+<p align="center"><b></b></p>
+
+**A Musical Programming Language for Emotion-Driven Sound**
+
+*ÆTHRA is a new domain-specific programming language (DSL) in version 0.8, designed to compose music using code.
+Instead of focusing on low-level audio math, ÆTHRA lets creators express emotion, harmony, and musical structure through readable commands.*
+
+# ÆTHRA is built for:
+
+Music-driven programmers
+
+Creative coders
+
+Audio experiments
+
+Algorithmic & emotional composition
+
+# Philosophy
+
+Music is logic. Emotion is structure. Code is the bridge.
+
+ÆTHRA treats music as a sequence of intentions, not wave equations.
+You describe what you want to feel — ÆTHRA handles how it sounds.
+
+# Features (v0.8)
+
+Chord-based composition (no need for raw notes)
+
+Tempo & timing control
+
+Built-in audio effects
+
+Reverb
+
+Echo
+
+Fade In / Fade Out
+
+Scales & harmony awareness
+
+Loops & repetition
+
+Crash-proof interpreter (safe parsing)
+
+Single-file scripts
+
+WAV audio export
+
+Clean, minimal syntax
+
+**Example: Sad Chord Progression**
+@Tempo(60)
+@Scale("Minor")
+@Reverb(0.7, 0.5)
+@Echo(0.5, 0.4)
+@Waveform("Triangle")
+
+@FadeIn(4)
+
+@Chord("A3 C4 E4", 4, 0.6)
+@Rest(1)
+@Chord("F3 A3 C4", 4, 0.6)
+@Rest(1)
+@Chord("G3 B3 D4", 4, 0.6)
+@Rest(1)
+@Chord("A3 C4 E4", 6, 0.5)
+
+@FadeOut(5)
+
+
+# Result: a slow, emotional, cinematic soundscape.
+
+# Language Commands (v0.8)
+**Musical Structure**
+
+@Tempo(bpm)	Set tempo
+@Scale("Major/Minor")	Set scale
+@Chord("notes", duration, volume)	Play a chord
+
+@Rest(seconds)	Silence
+
+
+**Sound Design**
+
+@Waveform("Triangle/Square/Saw/Noise")	Sound texture
+@ADSR(a,d,s,r)	Envelope shaping
+@Reverb(amount, decay)	Space
+@Echo(delay, feedback)	Depth
+
+
+**Transitions**
+
+@FadeIn(seconds)	Smooth start
+@FadeOut(seconds)	Smooth end
+
+
+**Control Flow**
+
+@loop(n){ ... }	Repeat block
+
+
+# Status
+
+Current Version: 0.8
+
+Stability: Mid level powerful
+
+Interpreter: Written in C# (.NET)
+
+Output: WAV audio files
+
+# Roadmap (v1.0)
+
+Planned features:
+
+Instrument profiles
+
+Chord progressions macros
+
+Arpeggiator modes
+
+Visual timeline
+
+Emotion presets
+
+Plugin system
+
+# Contributing
+
+**ÆTHRA is active**
+,Ideas and discussions are welcome.
+
+Fork the repo
+
+Create feature branches
+
+# License
+
+MIT License
+Free to use
+
+# Name Meaning
+(It is a Greek word)
+ÆTHRA — derived from Aether, the classical element of the sky.
+Symbolizes sound beyond the physical, music as atmosphere, emotion as code. 
+
+
+===============================================================================
+EXPORT COMPLETED: Sun Feb  1 04:13:45 PM EST 2026
+Total Files Found: 14
+Files Exported: 14
+Files Skipped: 0 (binary or large files)
+Output File: /home/kushal/src/dotnet/aethra/docs/llm/dump.txt
+===============================================================================
