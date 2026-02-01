@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Media;
 using System.Text;
 
 namespace AETHRA
@@ -39,21 +38,36 @@ namespace AETHRA
         static List<float> buffer = new();
 
         // ===== ENTRY POINT =====
-        public static void PlayLive(string script)
-        {
-            string temp = Path.Combine(Path.GetTempPath(), "aethra_preview.wav");
-            Run(script, temp);
-            using SoundPlayer player = new(temp);
-            player.Play();
-        }
-
         public static void Run(string script, string wavPath)
         {
+            // Reset state for each run
+            ResetState();
+            
             buffer.Clear();
             Execute(script.Split('\n', StringSplitOptions.RemoveEmptyEntries));
             ApplyEcho();
             ApplyReverb();
             WriteWav(wavPath);
+        }
+
+        private static void ResetState()
+        {
+            tempo = 120;
+            volume = 1.0;
+            attack = 0.01;
+            decay = 0.1;
+            sustain = 0.7;
+            release = 0.2;
+            scaleType = "";
+            echoDelay = 0;
+            echoDecay = 0;
+            reverbRoom = 0;
+            reverbDecay = 0;
+            instrument = "Sine";
+            lfoFreq = 0;
+            lfoDepth = 0;
+            octaveShift = 0;
+            velocityScale = 1.0;
         }
 
         // ===== SCRIPT EXECUTION =====
@@ -69,18 +83,37 @@ namespace AETHRA
                     if (l.StartsWith("@Tempo")) tempo = NumSafe(ArgSafe(l, 0));
                     else if (l.StartsWith("@Volume")) volume = NumSafe(ArgSafe(l, 0));
                     else if (l.StartsWith("@ADSR")) { attack = NumSafe(ArgSafe(l, 0)); decay = NumSafe(ArgSafe(l, 1)); sustain = NumSafe(ArgSafe(l, 2)); release = NumSafe(ArgSafe(l, 3)); }
+                    else if (l.StartsWith("@Envelope")) { attack = NumSafe(ArgSafe(l, 0)); decay = NumSafe(ArgSafe(l, 1)); sustain = NumSafe(ArgSafe(l, 2)); release = NumSafe(ArgSafe(l, 3)); }
                     else if (l.StartsWith("@Scale")) scaleType = ArgSafe(l, 0).Replace("\"", "");
                     else if (l.StartsWith("@Instrument")) instrument = ArgSafe(l, 0).Replace("\"", "");
+                    else if (l.StartsWith("@Waveform")) instrument = ArgSafe(l, 0).Replace("\"", "");
                     else if (l.StartsWith("@Echo")) { echoDelay = NumSafe(ArgSafe(l, 0)); echoDecay = NumSafe(ArgSafe(l, 1)); }
                     else if (l.StartsWith("@Reverb")) { reverbRoom = NumSafe(ArgSafe(l, 0)); reverbDecay = NumSafe(ArgSafe(l, 1)); }
                     else if (l.StartsWith("@FadeIn")) FadeIn(NumSafe(ArgSafe(l, 0)));
                     else if (l.StartsWith("@FadeOut")) FadeOut(NumSafe(ArgSafe(l, 0)));
-                    else if (l.StartsWith("@Loop"))
+                    else if (l.StartsWith("@Loop") || l.StartsWith("@loop"))
                     {
                         int times = (int)NumSafe(ArgSafe(l, 0));
                         List<string> block = new();
                         i++;
-                        while (i < lines.Length && !lines[i].Contains("}")) block.Add(lines[i++]);
+                        int braceDepth = 1;
+                        // Handle opening brace on same line or next line
+                        if (l.Contains("{"))
+                        {
+                            braceDepth = 1;
+                        }
+                        while (i < lines.Length && braceDepth > 0)
+                        {
+                            string blockLine = lines[i];
+                            if (blockLine.Contains("{")) braceDepth++;
+                            if (blockLine.Contains("}")) braceDepth--;
+                            if (braceDepth > 0)
+                            {
+                                block.Add(blockLine);
+                            }
+                            i++;
+                        }
+                        i--; // Adjust for the outer loop increment
                         for (int t = 0; t < times; t++) Execute(block.ToArray());
                     }
                     else if (l.StartsWith("@Rest")) Rest(NumSafe(ArgSafe(l, 0)));
@@ -93,12 +126,12 @@ namespace AETHRA
                         double[] freqs = notes.Select(n => NoteFreqSafe(n)).ToArray();
                         PlayChord(freqs, beats, vel);
                     }
-                    else if (l.StartsWith("@Arpeggio"))
+                    else if (l.StartsWith("@Arpeggio") || l.StartsWith("@Arp"))
                     {
                         string[] notes = ArgSafe(l, 0).Split();
                         double beats = NumSafe(ArgSafe(l, 1));
                         double vel = ArgCountSafe(l) > 2 ? NumSafe(ArgSafe(l, 2)) : 1;
-                        string pattern = ArgCountSafe(l) > 3 ? ArgSafe(l, 3).ToLower() : "up";
+                        string pattern = ArgCountSafe(l) > 3 ? ArgSafe(l, 3).Replace("\"", "").ToLower() : "up";
                         PlayArpeggio(notes, beats, vel, pattern);
                     }
                     else if (l.StartsWith("@OctaveShift")) octaveShift = (int)NumSafe(ArgSafe(l, 0));
@@ -139,6 +172,9 @@ namespace AETHRA
                         Grain(NumSafe(ArgSafe(l, 0)), NumSafe(ArgSafe(l, 1)), NumSafe(ArgSafe(l, 2)));
                     else if (l.StartsWith("@Texture"))
                         Texture(ArgSafe(l, 0));
+                    else if (l.StartsWith("@Noise"))
+                        Noise(NumSafe(ArgSafe(l, 0)), NumSafe(ArgSafe(l, 1)));
+                    // Ignore unknown commands (like @Track which is not implemented)
                 }
                 catch
                 {
@@ -198,6 +234,7 @@ namespace AETHRA
             {
                 "down" => notes.Reverse().ToList(),
                 "random" => notes.OrderBy(_ => rng.Next()).ToList(),
+                "updown" => notes.Concat(notes.Reverse().Skip(1)).ToList(),
                 _ => notes.ToList()
             };
             foreach (string n in order)
@@ -289,6 +326,9 @@ namespace AETHRA
                 "square" => Math.Sign(Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)),
                 "triangle" => 2 * Math.Asin(Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)) / Math.PI,
                 "saw" => 2 * (t * freq - Math.Floor(t * freq + 0.5)),
+                "strings" => (Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate) + 
+                             0.5 * Math.Sin(4 * Math.PI * freq * sampleIndex / SampleRate) +
+                             0.25 * Math.Sin(6 * Math.PI * freq * sampleIndex / SampleRate)) / 1.75,
                 _ => Math.Sin(2 * Math.PI * freq * sampleIndex / SampleRate)
             };
 
@@ -304,6 +344,7 @@ namespace AETHRA
         {
             try
             {
+                n = n.Replace("\"", "").Trim();
                 string[] notes = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
                 string notePart = n.Length > 1 && n[1] == '#' ? n.Substring(0, 2) : n.Substring(0, 1);
                 int i = Array.IndexOf(notes, notePart);
@@ -328,7 +369,7 @@ namespace AETHRA
 
         static double NumSafe(string s)
         {
-            try { return double.Parse(s); }
+            try { return double.Parse(s.Replace("\"", "")); }
             catch { return 0; }
         }
 

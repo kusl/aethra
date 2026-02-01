@@ -1,4 +1,4 @@
-﻿namespace Aethra
+﻿namespace AETHRA
 {
     public class ATHRAProject
     {

@@ -1,0 +1,36 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AETHRA.MainWindow"
+        Title="ÆTHRA — Music Programming Language"
+        Width="900"
+        Height="550"
+        WindowStartupLocation="CenterScreen">
+    
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Stretch">
+            <Button Name="RunButton" Content="▶ Play" Click="RunButton_Click" 
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                    Height="40" Margin="5" />
+            <Button Name="ExportButton" Content="💾 Export WAV" Click="ExportButton_Click"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                    Height="40" Margin="5" />
+            <TextBlock Name="StatusText" VerticalAlignment="Center" Margin="10,0,0,0" 
+                       Foreground="Gray" />
+        </StackPanel>
+        
+        <TextBox Name="Editor"
+                 AcceptsReturn="True"
+                 AcceptsTab="True"
+                 TextWrapping="NoWrap"
+                 FontFamily="Consolas,Liberation Mono,Courier New,monospace"
+                 FontSize="14"
+                 Margin="5"
+                 Text="@Tempo(120)
+@Waveform(&quot;Sine&quot;)
+@Note(&quot;C5&quot;,1)
+@Rest(0.5)
+@Note(&quot;D5&quot;,1)
+@Note(&quot;E5&quot;,1)
+@Chord(&quot;C4 E4 G4&quot;,2)" />
+    </DockPanel>
+</Window>
