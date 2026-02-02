@@ -13,13 +13,10 @@ Instead of focusing on low-level audio math, ÆTHRA lets creators express emotio
 
 # ÆTHRA is built for:
 
-Music-driven programmers
-
-Creative coders
-
-Audio experiments
-
-Algorithmic & emotional composition
+- Music-driven programmers
+- Creative coders
+- Audio experiments
+- Algorithmic & emotional composition
 
 # Philosophy
 
@@ -32,29 +29,20 @@ You describe what you want to feel — ÆTHRA handles how it sounds.
 
 Chord-based composition (no need for raw notes)
 
-Tempo & timing control
-
-Built-in audio effects
-
-Reverb
-
-Echo
-
-Fade In / Fade Out
-
-Scales & harmony awareness
-
-Loops & repetition
-
-Crash-proof interpreter (safe parsing)
-
-Single-file scripts
-
-WAV audio export
-
-Clean, minimal syntax
+- Tempo & timing control
+- Built-in audio effects
+- Reverb
+- Echo
+- Fade In / Fade Out
+- Scales & harmony awareness
+- Loops & repetition
+- Crash-proof interpreter (safe parsing)
+- Single-file scripts
+- WAV audio export
+- Clean, minimal syntax
 
 **Example: Sad Chord Progression**
+```
 @Tempo(60)
 @Scale("Minor")
 @Reverb(0.7, 0.5)
@@ -72,38 +60,39 @@ Clean, minimal syntax
 @Chord("A3 C4 E4", 6, 0.5)
 
 @FadeOut(5)
+```
 
 
 # Result: a slow, emotional, cinematic soundscape.
 
 # Language Commands (v0.8)
 **Musical Structure**
-
+```
 @Tempo(bpm)	Set tempo
 @Scale("Major/Minor")	Set scale
 @Chord("notes", duration, volume)	Play a chord
 
 @Rest(seconds)	Silence
-
+```
 
 **Sound Design**
-
+```
 @Waveform("Triangle/Square/Saw/Noise")	Sound texture
 @ADSR(a,d,s,r)	Envelope shaping
 @Reverb(amount, decay)	Space
 @Echo(delay, feedback)	Depth
-
+```
 
 **Transitions**
-
+```
 @FadeIn(seconds)	Smooth start
 @FadeOut(seconds)	Smooth end
-
+```
 
 **Control Flow**
-
+```
 @loop(n){ ... }	Repeat block
-
+```
 
 # Status
 
@@ -118,23 +107,16 @@ Output: WAV audio files
 # Roadmap (v1.0)
 
 Planned features:
-
-Instrument profiles
-
-Chord progressions macros
-
-Arpeggiator modes
-
-Visual timeline
-
-Emotion presets
-
-Plugin system
+- Instrument profiles
+- Chord progressions macros
+- Arpeggiator modes
+- Visual timeline
+- Emotion presets
+- Plugin system
 
 # Contributing
 
-**ÆTHRA is active**
-,Ideas and discussions are welcome.
+**ÆTHRA is active**, Ideas and discussions are welcome.
 
 Fork the repo
 
